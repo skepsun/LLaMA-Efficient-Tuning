@@ -155,6 +155,7 @@ class PPOPeftTrainer(PPOTrainer, PeftTrainer):
                 unwrapped_model.config.use_cache = False
 
                 stats = self.step(queries, responses, rewards)
+                self.log_stats(stats, batch, rewards)
 
                 loss_meter.update(stats["ppo/loss/total"], n=len(rewards))
                 reward_meter.update(torch.stack(rewards).mean().item(), n=len(rewards))

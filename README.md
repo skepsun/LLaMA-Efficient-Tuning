@@ -157,9 +157,9 @@ CUDA_VISIBLE_DEVICES=0 python src/train_sft.py \
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python src/train_rm.py \
-    --model_name_or_path path_to_your_model \
+    --model_name_or_path /d1/data/chuxiong/my_llm/output/baichuan-7b-sft \
     --do_train \
-    --dataset comparison_gpt4_en \
+    --dataset comparison_gpt4_zh \
     --finetuning_type lora \
     --output_dir path_to_rm_checkpoint \
     --per_device_train_batch_size 4 \

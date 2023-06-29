@@ -14,6 +14,15 @@
     "file_name": "alpaca_gpt4_data_zh.json",
     "file_sha1": "3eaa3bda364ccdd59925d7448a698256c31ef845"
   },
+  "moss_belle_law": {
+    "script_url": "moss_belle_law",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
+  },
   "belle_0.5m": {
     "hf_hub_url": "BelleGroup/train_0.5M_CN"
   },
@@ -56,6 +65,63 @@
   "alpaca_cot": {
     "hf_hub_url": "QingyiSi/Alpaca-CoT"
   },
+  "alpaca_cot_cn": {
+    "file_name": "CoT_Chinese_data.json"
+  },
+  "alpaca_evol_cleaned": {
+    "hf_hub_url": "PocketDoc/Alpaca_Evol_Instruct_Cleaned"
+  },
+  "tigerbot_kaggle_leetcode":{
+    "hf_hub_url": "TigerResearch/tigerbot-kaggle-leetcodesolutions-en-2k"
+  },
+  "tigerbot_HC3_zh":{
+    "hf_hub_url": "TigerResearch/tigerbot-HC3-zh-12k"
+  },
+  "tigerbot_firefly_zh":{
+    "hf_hub_url": "TigerResearch/tigerbot-firefly-zh-20k"
+  },
+  "tigerbot_wiki_qa_zh":{
+    "hf_hub_url": "TigerResearch/tigerbot-wiki-qa-zh-1k"
+  },
+  "tigerbot_book_qa":{
+    "hf_hub_url": "TigerResearch/tigerbot-book-qa-1k"
+  },
+  "grade_school_math":{
+    "hf_hub_url": "qwedsacf/grade-school-math-instructions",
+    "columns":{
+      "prompt": "INSTRUCTION",
+      "query": "",
+      "response": "RESPONSE",
+      "history": ""
+    }
+  },
+  "alpaca_cleaned":{
+    "hf_hub_url": "yahma/alpaca-cleaned",
+    "columns":{
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "hisotry": ""
+    }
+  },
+  "alpaca_evol_instruct_cleaned":{
+    "hf_hub_url": "PocketDoc/Alpaca_Evol_Instruct_Cleaned",
+    "columns":{
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "hisotry": ""
+    }
+  },
+  "ziya_ft_small":{
+    "script_url": "ziya_ft_small",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
+  },
   "webqa": {
     "hf_hub_url": "suolyer/webqa",
     "columns": {
@@ -94,6 +160,15 @@
       "history": "history"
     }
   },
+  "sharegpt_ppo": {
+    "script_url": "sharegpt_ppo",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
+  },
   "example": {
     "script_url": "example_dataset",
     "columns": {
@@ -110,6 +185,39 @@
   "comparison_gpt4_zh": {
     "file_name": "comparison_gpt4_data_zh.json",
     "file_sha1": "515b18ed497199131ddcc1af950345c11dc5c7fd"
+  },
+  "crimekg_assistant_52k": {
+    "file_name": "crimekg_assistant_52k.json",
+    "columns": {
+      "prompt": "question",
+      "query": "",
+      "response": "answer",
+      "hisotry": ""
+    }
+  },
+  "crimekg_assistant_92k": {
+    "file_name": "crimekg_assistant_92k.json",
+    "columns": {
+      "prompt": "question",
+      "query": "",
+      "response": "answer",
+      "hisotry": ""
+    }
+  },
+  "moss_belle_law_rm": {
+    "file_name": "moss_belle_law_rm.json"
+  },
+  "sharegpt_rm": {
+    "file_name": "sharegpt_rm_cleaned.json"
+  },
+  "sharegpt": {
+    "script_url": "sharegpt",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
   },
   "hh_rlhf_en": {
     "script_url": "hh_rlhf_en",
@@ -140,9 +248,27 @@
       "history": "history"
     }
   },
+  "hh_rlhf_sft_en": {
+    "script_url": "hh_rlhf_sft_en",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
+  },
   "wiki_demo": {
     "file_name": "wiki_demo.txt",
     "file_sha1": "b2288edb05b233e5b35250fd4b308a5fa21fa66d",
+    "columns": {
+      "prompt": "text",
+      "query": "",
+      "response": "",
+      "history": ""
+    }
+  },
+  "all_cn_laws": {
+    "script_url": "all_cn_laws",
     "columns": {
       "prompt": "text",
       "query": "",

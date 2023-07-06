@@ -79,7 +79,10 @@ class ModelArguments:
         default=False,
         metadata={"help": "Whether to plot the training loss after fine-tuning or not."}
     )
-
+    init_kl_coef: Optional[float] = field(
+        default=0.2,
+        metadata={"help": "The coefficient for penalty term computed as the kl-divergence between target model and initial model in PPO process."}
+    )
     def __post_init__(self):
         if self.checkpoint_dir is not None: # support merging multiple lora weights
             self.checkpoint_dir = [cd.strip() for cd in self.checkpoint_dir.split(",")]

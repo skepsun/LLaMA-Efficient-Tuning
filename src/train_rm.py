@@ -4,6 +4,12 @@
 # https://github.com/lvwerra/trl/blob/main/examples/summarization/scripts/reward_summarization.py
 # https://github.com/CarperAI/trlx/blob/main/examples/summarize_rlhf/reward_model/train_reward_model_gptj.py
 
+# Need to call this before importing transformers.
+from llama_flash_attn_monkey_patch import (
+    replace_llama_attn_with_flash_attn,
+)
+
+replace_llama_attn_with_flash_attn()
 
 from utils import (
     PairwiseDataCollatorWithPadding,

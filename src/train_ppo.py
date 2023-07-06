@@ -4,7 +4,12 @@
 # https://github.com/lvwerra/trl/blob/main/examples/sentiment/scripts/gpt-neox-20b_peft/gpt-neo-20b_sentiment_peft.py
 
 import math
+# Need to call this before importing transformers.
+from llama_flash_attn_monkey_patch import (
+    replace_llama_attn_with_flash_attn,
+)
 
+replace_llama_attn_with_flash_attn()
 from torch.optim import AdamW
 from transformers.optimization import get_scheduler, Adafactor
 from trl import PPOConfig
@@ -40,6 +45,7 @@ def main():
         max_grad_norm=training_args.max_grad_norm,
         log_with=training_args.report_to,
         optimize_cuda_cache=True,
+        init_kl_coef=model_args.init_kl_coef,
         # gamma=1,
         # lam=0.95,
         # vf_coef=0.1,

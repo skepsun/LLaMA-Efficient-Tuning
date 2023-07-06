@@ -3,6 +3,12 @@
 # This code is inspired by
 # https://github.com/huggingface/transformers/blob/v4.29.2/examples/pytorch/summarization/run_summarization.py
 
+# Need to call this before importing transformers.
+from llama_flash_attn_monkey_patch import (
+    replace_llama_attn_with_flash_attn,
+)
+
+replace_llama_attn_with_flash_attn()
 
 from utils import (
     DynamicDataCollatorWithPadding,
@@ -39,6 +45,7 @@ def main():
     # Split the dataset
     if training_args.do_train:
         if data_args.dev_ratio > 1e-6:
+            print("Split train and eval sets")
             dataset = dataset.train_test_split(test_size=data_args.dev_ratio)
             trainer_kwargs = {"train_dataset": dataset["train"], "eval_dataset": dataset["test"]}
         else:

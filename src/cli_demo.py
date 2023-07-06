@@ -11,10 +11,38 @@ from utils import (
 )
 from threading import Thread
 from transformers import TextIteratorStreamer
+from retriver.retrieve_law import retriver
+import argparse
+import json
+import faiss                   
+import pickle
+from text2vec import SentenceModel
 
 
+def retriver(query,t2v_model,index,raw_law_data,top_k):
+    input_q = query
+    while input_q != 'kill':
+        q_emb = t2v_model.encode([input_q])
+        D, I = index.search(q_emb, top_k)
+        output = [raw_law_data[i] for i in I[0]]
+        return output
+    
 def main():
+    # embedding_path='src/retriver/law_embs.pkl'
+    # rawdata_path='src/retriver/fatiao.json'
+    # top_k=3
 
+    # law_embeds = pickle.load(open(embedding_path, 'rb'))
+    # raw_law_data = json.load(open(rawdata_path, 'rb'))
+    
+    # print('load retriver model')  
+    # index = faiss.IndexFlatIP(law_embeds.shape[-1])   
+    # print(index.is_trained)
+    # index.add(law_embeds)  
+    # print(index.ntotal)   
+
+    # t2v_model = SentenceModel("../text2vec-base-chinese")
+    
     model_args, data_args, finetuning_args, generating_args = prepare_infer_args()
     model, tokenizer = load_pretrained(model_args, finetuning_args)
 
@@ -67,7 +95,15 @@ def main():
             history = []
             print("History has been removed.")
             continue
-
+        
+        if query.strip() == "history":
+            print(history)
+            continue
+        # history = predict_and_print(query+'\n给出相关的法律依据', history)
+        # str1="-"
+        # law = retriver(query+history[-1][1],t2v_model,index,raw_law_data,top_k)
+        # history = history[:-1]
+        # query = '1、' + str1.join(law[0]) + '2、' + str1.join(law[1]) + '3、'+ str1.join(law[2]) + '请根据以上法律，选择最合适的法律生成问题的合理答复，问题是：' + query
         history = predict_and_print(query, history)
 
 

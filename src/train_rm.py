@@ -4,6 +4,12 @@
 # https://github.com/lvwerra/trl/blob/main/examples/summarization/scripts/reward_summarization.py
 # https://github.com/CarperAI/trlx/blob/main/examples/summarize_rlhf/reward_model/train_reward_model_gptj.py
 
+# Need to call this before importing transformers.
+from llama_flash_attn_monkey_patch import (
+    replace_llama_attn_with_flash_attn,
+)
+
+replace_llama_attn_with_flash_attn()
 
 from utils import (
     PairwiseDataCollatorWithPadding,
@@ -23,6 +29,12 @@ def main():
     model_args, data_args, training_args, finetuning_args = prepare_args(stage="rm")
     dataset = prepare_data(model_args, data_args)
     model, tokenizer = load_pretrained(model_args, finetuning_args, training_args.do_train, stage="rm")
+    # Freeze the first 70% of the hidden layers of the reward model backbone
+    # layers = model.pretrained_model.model.layers
+    # num_layers = len(layers)
+    # num_frozen = int(0.7 * num_layers)
+    # for layer in layers[:num_frozen]:
+    #     layer.requires_grad_(False)
     dataset = preprocess_data(dataset, tokenizer, data_args, training_args, stage="rm")
     data_collator = PairwiseDataCollatorWithPadding(tokenizer)
 

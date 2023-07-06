@@ -4,9 +4,14 @@
 # https://github.com/lvwerra/trl/blob/main/examples/sentiment/scripts/gpt-neox-20b_peft/gpt-neo-20b_sentiment_peft.py
 
 import math
+# Need to call this before importing transformers.
+from llama_flash_attn_monkey_patch import (
+    replace_llama_attn_with_flash_attn,
+)
 
+replace_llama_attn_with_flash_attn()
 from torch.optim import AdamW
-from transformers.optimization import get_scheduler
+from transformers.optimization import get_scheduler, Adafactor
 from trl import PPOConfig
 
 from utils import (
@@ -37,9 +42,22 @@ def main():
         batch_size=training_args.per_device_train_batch_size,
         gradient_accumulation_steps=training_args.gradient_accumulation_steps,
         ppo_epochs=1,
-        max_grad_norm=training_args.max_grad_norm
+        max_grad_norm=training_args.max_grad_norm,
+        log_with=training_args.report_to,
+        optimize_cuda_cache=True,
+        init_kl_coef=model_args.init_kl_coef,
+        # gamma=1,
+        # lam=0.95,
+        # vf_coef=0.1,
     )
 
+    # optimizer = Adafactor(
+    #     filter(lambda p: p.requires_grad, model.parameters()),
+    #     scale_parameter=False,
+    #     relative_step=False,
+    #     warmup_init=False,
+    #     lr=ppo_config.learning_rate,
+    # )
     optimizer = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=ppo_config.learning_rate)
     total_train_batch_size = \
         training_args.per_device_train_batch_size * training_args.gradient_accumulation_steps * training_args.world_size

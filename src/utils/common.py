@@ -214,7 +214,7 @@ def load_pretrained(
         model_to_load,
         config=config,
         torch_dtype=torch.bfloat16 if model_args.compute_dtype == torch.bfloat16 else torch.float16,
-        low_cpu_mem_usage=True,
+        low_cpu_mem_usage=False,
         **config_kwargs
     )
 

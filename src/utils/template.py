@@ -90,6 +90,26 @@ class Template:
                 sep="\n",
                 use_history=True
             )
+        elif self.name == "my_llm":
+            r"""
+            Supports: https://github.com/Neutralzz/BiLLa
+            """
+            self._register_template(
+                prefix="",
+                prompt="<Human>{query}<Assistant>",
+                sep="",
+                use_history=True
+            )
+        elif self.name == "simple":
+            r"""
+            Supports: https://github.com/Neutralzz/BiLLa
+            """
+            self._register_template(
+                prefix="",
+                prompt="{query}",
+                sep="",
+                use_history=True
+            )
 
         elif self.name == "ziya":
             r"""

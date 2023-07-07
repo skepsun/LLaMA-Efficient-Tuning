@@ -6,6 +6,7 @@ __pycache__/
 # C extensions
 *.so
 
+!dataset_info.json
 # Distribution / packaging
 .Python
 build/

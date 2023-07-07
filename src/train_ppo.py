@@ -5,11 +5,11 @@
 
 import math
 # Need to call this before importing transformers.
-from llama_flash_attn_monkey_patch import (
-    replace_llama_attn_with_flash_attn,
-)
+# from llama_flash_attn_monkey_patch import (
+#     replace_llama_attn_with_flash_attn,
+# )
 
-replace_llama_attn_with_flash_attn()
+# replace_llama_attn_with_flash_attn()
 from torch.optim import AdamW
 from transformers.optimization import get_scheduler, Adafactor
 from trl import PPOConfig

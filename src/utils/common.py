@@ -214,7 +214,7 @@ def load_pretrained(
         model_to_load,
         config=config,
         torch_dtype=torch.bfloat16 if model_args.compute_dtype == torch.bfloat16 else torch.float16,
-        low_cpu_mem_usage=False,
+        low_cpu_mem_usage=True,
         **config_kwargs
     )
 
@@ -383,8 +383,10 @@ def prepare_data(
 
     max_samples = data_args.max_samples
     all_datasets: List[Dataset] = [] # support multiple datasets
-
-    for dataset_attr in data_args.dataset_list:
+    if max_samples is not None:
+        if len(max_samples) < len(data_args.dataset_list):
+            max_samples = max_samples + (len(data_args.dataset_list)-len(max_samples)) * [max_samples[-1]]
+    for d_idx, dataset_attr in enumerate(data_args.dataset_list):
 
         logger.info("Loading dataset {}...".format(dataset_attr))
 
@@ -428,9 +430,10 @@ def prepare_data(
             use_auth_token=True if model_args.use_auth_token else None
         )
         dataset = raw_datasets[data_args.split]
-
+        # replace with my implementation
         if max_samples is not None:
-            max_samples_temp = min(len(dataset), max_samples)
+            dataset = dataset.shuffle()
+            max_samples_temp = min(len(dataset), max_samples[d_idx] )
             dataset = dataset.select(range(max_samples_temp))
 
         dummy_data = [None] * len(dataset)
@@ -447,6 +450,7 @@ def prepare_data(
                 else: # None or empty string
                     dataset = dataset.add_column(target_name, dummy_data)
         dataset = dataset.add_column("prefix", prefix_data)
+        dataset = dataset.shuffle()
         all_datasets.append(dataset)
 
     if len(data_args.dataset_list) == 1:
@@ -552,7 +556,7 @@ def preprocess_data(
 
             source_ids = tokenizer.encode(text=prompt, add_special_tokens=True)
             accept_ids = tokenizer.encode(text=answer[0], add_special_tokens=False)
-            reject_ids = tokenizer.encode(text=answer[1], add_special_tokens=False)
+            reject_ids = tokenizer.encode(text=answer[-1], add_special_tokens=False)
 
             if len(source_ids) > data_args.max_source_length:
                 source_ids = source_ids[:data_args.max_source_length]

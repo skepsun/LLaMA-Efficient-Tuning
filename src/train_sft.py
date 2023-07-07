@@ -4,11 +4,11 @@
 # https://github.com/huggingface/transformers/blob/v4.29.2/examples/pytorch/summarization/run_summarization.py
 
 # Need to call this before importing transformers.
-from llama_flash_attn_monkey_patch import (
-    replace_llama_attn_with_flash_attn,
-)
+# from llama_flash_attn_monkey_patch import (
+#     replace_llama_attn_with_flash_attn,
+# )
 
-replace_llama_attn_with_flash_attn()
+# replace_llama_attn_with_flash_attn()
 
 from utils import (
     DynamicDataCollatorWithPadding,

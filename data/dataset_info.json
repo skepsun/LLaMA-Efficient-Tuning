@@ -48,7 +48,13 @@
     }
   },
   "guanaco": {
-    "hf_hub_url": "JosephusCheung/GuanacoDataset"
+    "hf_hub_url": "Chinese-Vicuna/guanaco_belle_merge_v1.0",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": ""
+    }
   },
   "firefly": {
     "hf_hub_url": "YeungNLP/firefly-train-1.1M",
@@ -219,6 +225,15 @@
       "history": "history"
     }
   },
+  "lima": {
+    "script_url": "lima",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
+  },
   "math_instruct": {
     "hf_hub_url": "alpayariyak/MATH_Instruct_no_input",
     "columns": {
@@ -230,6 +245,15 @@
   },
   "hh_rlhf_en": {
     "script_url": "hh_rlhf_en",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
+  },
+  "anima_belle_rlhf": {
+    "script_url": "anima_belle_rlhf",
     "columns": {
       "prompt": "instruction",
       "query": "",

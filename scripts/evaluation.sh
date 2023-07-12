@@ -1,0 +1,1 @@
+python evaluation/evaluate.py --evalset ceval/ceval-exam:law --split dev --api_base http://localhost:8000/v1 --task_type choice

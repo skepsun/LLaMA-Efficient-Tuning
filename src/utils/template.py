@@ -134,6 +134,28 @@ class Template:
                 use_history=True
             )
 
+        elif self.name == "intern":
+            r"""
+            Supports: https://huggingface.co/internlm/internlm-chat-7b
+            """
+            self._register_template(
+                prefix="",
+                prompt="<|User|>:{query}<eoh>\n<|Bot|>:",
+                sep="<eoa>\n",
+                use_history=True
+            )
+
+        elif self.name == "baichuan":
+            r"""
+            Supports: https://huggingface.co/baichuan-inc/Baichuan-13B-Chat
+            """
+            self._register_template(
+                prefix="",
+                prompt="<reserved_102>{query}<reserved_103>",
+                sep="",
+                use_history=True
+            )
+
         else:
             raise ValueError("Template {} does not exist.".format(self.name))
 

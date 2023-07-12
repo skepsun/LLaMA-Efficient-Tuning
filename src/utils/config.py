@@ -99,6 +99,10 @@ class DataTrainingArguments:
         default="alpaca_zh",
         metadata={"help": "The name of provided dataset(s) to use. Use comma to separate multiple datasets."}
     )
+    max_samples: Optional[str] = field(
+        default=None,
+        metadata={"help": "Limit the maximum number of samples for each dataset."}
+    )
     dataset_dir: Optional[str] = field(
         default="data",
         metadata={"help": "The name of the folder containing datasets."}
@@ -123,10 +127,6 @@ class DataTrainingArguments:
         default=512,
         metadata={"help": "The maximum total output sequence length after tokenization."}
     )
-    max_samples: Optional[int] = field(
-        default=None,
-        metadata={"help": "For debugging purposes, truncate the number of examples for each dataset."}
-    )
     eval_num_beams: Optional[int] = field(
         default=None,
         metadata={"help": "Number of beams to use for evaluation. This argument will be passed to `model.generate`"}
@@ -150,6 +150,8 @@ class DataTrainingArguments:
 
     def init_for_training(self): # support mixing multiple datasets
         dataset_names = [ds.strip() for ds in self.dataset.split(",")]
+        if self.max_samples is not None:
+            self.max_samples = [int(ms) for ms in str(self.max_samples).split(",")]
         with open(os.path.join(self.dataset_dir, "dataset_info.json"), "r") as f:
             dataset_info = json.load(f)
 

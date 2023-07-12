@@ -48,7 +48,13 @@
     }
   },
   "guanaco": {
-    "hf_hub_url": "JosephusCheung/GuanacoDataset"
+    "hf_hub_url": "Chinese-Vicuna/guanaco_belle_merge_v1.0",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": ""
+    }
   },
   "firefly": {
     "hf_hub_url": "YeungNLP/firefly-train-1.1M",
@@ -228,6 +234,15 @@
       "history": "history"
     }
   },
+  "anima_belle_rlhf": {
+    "script_url": "anima_belle_rlhf",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
+  },
   "oaast_rm": {
     "file_name": "oaast_rm.json",
     "file_sha1": "622d420e9b70003b210618253bd3d9d2891d86cb",
@@ -239,7 +254,7 @@
     }
   },
   "oaast_rm_zh": {
-    "file_name": "",
+    "file_name": "oaast_rm_zh.json",
     "file_sha1": "1065af1f3784dd61be5e79713a35f427b713a232",
     "columns": {
       "prompt": "instruction",
@@ -257,6 +272,15 @@
       "history": "history"
     }
   },
+  "oasst_dolly_hhrlhf": {
+    "hf_hub_url": "VMware/open-instruct-v1-oasst-dolly-hhrlhf",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "response",
+      "history": ""
+    }
+  },
   "wiki_demo": {
     "file_name": "wiki_demo.txt",
     "file_sha1": "b2288edb05b233e5b35250fd4b308a5fa21fa66d",
@@ -269,6 +293,15 @@
   },
   "all_cn_laws": {
     "script_url": "all_cn_laws",
+    "columns": {
+      "prompt": "text",
+      "query": "",
+      "response": "",
+      "history": ""
+    }
+  },
+  "wikitext": {
+    "hf_hub_url": "conceptofmind/wikitext-2-v1-clean",
     "columns": {
       "prompt": "text",
       "query": "",

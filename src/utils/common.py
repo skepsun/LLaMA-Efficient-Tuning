@@ -97,7 +97,7 @@ def _init_adapter(
 
     if finetuning_args.finetuning_type == "lora":
         logger.info("Fine-tuning method: LoRA")
-        lastest_checkpoint = None
+        latest_checkpoint = None
 
         if model_args.checkpoint_dir is not None:
             assert os.path.exists(os.path.join(model_args.checkpoint_dir[0], WEIGHTS_NAME)), \
@@ -106,7 +106,7 @@ def _init_adapter(
                 "The given checkpoint may be not a LoRA checkpoint, please specify `--finetuning_type full/freeze` instead."
 
             if (is_trainable and model_args.resume_lora_training) or (not is_mergeable): # continually train on the lora weights
-                checkpoints_to_merge, lastest_checkpoint = model_args.checkpoint_dir[:-1], model_args.checkpoint_dir[-1]
+                checkpoints_to_merge, latest_checkpoint = model_args.checkpoint_dir[:-1], model_args.checkpoint_dir[-1]
             else:
                 checkpoints_to_merge = model_args.checkpoint_dir
 
@@ -117,10 +117,10 @@ def _init_adapter(
             if len(checkpoints_to_merge) > 0:
                 logger.info("Merged {} model checkpoint(s).".format(len(checkpoints_to_merge)))
 
-            if lastest_checkpoint is not None: # resume lora training or quantized inference
-                model = PeftModel.from_pretrained(model, lastest_checkpoint, is_trainable=is_trainable)
+            if latest_checkpoint is not None: # resume lora training or quantized inference
+                model = PeftModel.from_pretrained(model, latest_checkpoint, is_trainable=is_trainable)
 
-        if is_trainable and lastest_checkpoint is None: # create new lora weights while training
+        if is_trainable and latest_checkpoint is None: # create new lora weights while training
             lora_config = LoraConfig(
                 task_type=TaskType.CAUSAL_LM,
                 inference_mode=False,
@@ -383,8 +383,10 @@ def prepare_data(
 
     max_samples = data_args.max_samples
     all_datasets: List[Dataset] = [] # support multiple datasets
-
-    for dataset_attr in data_args.dataset_list:
+    if max_samples is not None:
+        if len(max_samples) < len(data_args.dataset_list):
+            max_samples = max_samples + (len(data_args.dataset_list)-len(max_samples)) * [max_samples[-1]]
+    for d_idx, dataset_attr in enumerate(data_args.dataset_list):
 
         logger.info("Loading dataset {}...".format(dataset_attr))
 
@@ -428,9 +430,10 @@ def prepare_data(
             use_auth_token=True if model_args.use_auth_token else None
         )
         dataset = raw_datasets[data_args.split]
-
+        # replace with my implementation
         if max_samples is not None:
-            max_samples_temp = min(len(dataset), max_samples)
+            dataset = dataset.shuffle()
+            max_samples_temp = min(len(dataset), max_samples[d_idx] )
             dataset = dataset.select(range(max_samples_temp))
 
         dummy_data = [None] * len(dataset)
@@ -447,6 +450,7 @@ def prepare_data(
                 else: # None or empty string
                     dataset = dataset.add_column(target_name, dummy_data)
         dataset = dataset.add_column("prefix", prefix_data)
+        dataset = dataset.shuffle()
         all_datasets.append(dataset)
 
     if len(data_args.dataset_list) == 1:
@@ -505,7 +509,7 @@ def preprocess_data(
             input_ids, labels = [], []
 
             for i in range(len(dialog) // 2):
-                source_ids = tokenizer.encode(text=dialog[2*i], add_special_tokens=True)
+                source_ids = tokenizer.encode(text=dialog[2*i], add_special_tokens=(i == 0))
                 target_ids = tokenizer.encode(text=dialog[2*i+1], add_special_tokens=False)
 
                 if len(source_ids) > data_args.max_source_length:
@@ -552,7 +556,7 @@ def preprocess_data(
 
             source_ids = tokenizer.encode(text=prompt, add_special_tokens=True)
             accept_ids = tokenizer.encode(text=answer[0], add_special_tokens=False)
-            reject_ids = tokenizer.encode(text=answer[1], add_special_tokens=False)
+            reject_ids = tokenizer.encode(text=answer[-1], add_special_tokens=False)
 
             if len(source_ids) > data_args.max_source_length:
                 source_ids = source_ids[:data_args.max_source_length]

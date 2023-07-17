@@ -1,9 +1,8 @@
-# coding=utf-8
-# Implements parameter-efficient PPO training of fine-tuned models.
-# This code is inspired by:
+# Inspired by:
 # https://github.com/lvwerra/trl/blob/main/examples/sentiment/scripts/gpt-neox-20b_peft/gpt-neo-20b_sentiment_peft.py
 
 import math
+<<<<<<< HEAD:src/train_ppo.py
 # Need to call this before importing transformers.
 # from llama_flash_attn_monkey_patch import (
 #     replace_llama_attn_with_flash_attn,
@@ -24,16 +23,31 @@ from utils import (
     preprocess_data,
     plot_loss
 )
+=======
+from trl import PPOConfig
+from torch.optim import AdamW
+from transformers import DataCollatorForSeq2Seq, Seq2SeqTrainingArguments
+from transformers.optimization import get_scheduler
+>>>>>>> 1e1358431dde1ed774b0e1e48760ca9f0db685ef:src/llmtuner/tuner/ppo/workflow.py
+
+from llmtuner.dsets import get_dataset, preprocess_dataset
+from llmtuner.extras.callbacks import LogCallback
+from llmtuner.extras.ploting import plot_loss
+from llmtuner.hparams import ModelArguments, DataArguments, FinetuningArguments
+from llmtuner.tuner.core import load_model_and_tokenizer
+from llmtuner.tuner.ppo.trainer import PPOPeftTrainer
 
 
-def main():
-
-    # Prepare pretrained model and dataset
-    model_args, data_args, training_args, finetuning_args = prepare_args(stage="ppo")
-    dataset = prepare_data(model_args, data_args)
-    model, tokenizer = load_pretrained(model_args, finetuning_args, training_args.do_train, stage="ppo")
-    dataset = preprocess_data(dataset, tokenizer, data_args, training_args, stage="ppo")
-    data_collator = DynamicDataCollatorWithPadding(tokenizer)
+def run_ppo(
+    model_args: ModelArguments,
+    data_args: DataArguments,
+    training_args: Seq2SeqTrainingArguments,
+    finetuning_args: FinetuningArguments
+):
+    dataset = get_dataset(model_args, data_args)
+    model, tokenizer = load_model_and_tokenizer(model_args, finetuning_args, training_args.do_train, stage="ppo")
+    dataset = preprocess_dataset(dataset, tokenizer, data_args, training_args, stage="ppo")
+    data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, label_pad_token_id=tokenizer.pad_token_id)
 
     ppo_config = PPOConfig(
         model_name=model_args.model_name_or_path,
@@ -88,12 +102,3 @@ def main():
     ppo_trainer.save_state() # must be after save_model
     if ppo_trainer.is_world_process_zero() and model_args.plot_loss:
         plot_loss(training_args.output_dir, keys=["loss", "reward"])
-
-
-def _mp_fn(index):
-    # For xla_spawn (TPUs)
-    main()
-
-
-if __name__ == "__main__":
-    main()

@@ -1,15 +1,16 @@
 # LLaMA Efficient Tuning
 
-![GitHub Repo stars](https://img.shields.io/github/stars/hiyouga/LLaMA-Efficient-Tuning?style=social)
-![GitHub Code License](https://img.shields.io/github/license/hiyouga/LLaMA-Efficient-Tuning)
-![GitHub last commit](https://img.shields.io/github/last-commit/hiyouga/LLaMA-Efficient-Tuning)
-![GitHub pull request](https://img.shields.io/badge/PRs-welcome-blue)
+[![GitHub Repo stars](https://img.shields.io/github/stars/hiyouga/LLaMA-Efficient-Tuning?style=social)](https://github.com/hiyouga/LLaMA-Efficient-Tuning/stargazers)
+[![GitHub Code License](https://img.shields.io/github/license/hiyouga/LLaMA-Efficient-Tuning)](LICENSE)
+[![GitHub last commit](https://img.shields.io/github/last-commit/hiyouga/LLaMA-Efficient-Tuning)](https://github.com/hiyouga/LLaMA-Efficient-Tuning/commits/main)
+[![PyPI](https://img.shields.io/pypi/v/llmtuner)](https://pypi.org/project/llmtuner/)
+[![GitHub pull request](https://img.shields.io/badge/PRs-welcome-blue)](https://github.com/hiyouga/LLaMA-Efficient-Tuning/pulls)
 
 👋 Join our [WeChat](assets/wechat.jpg).
 
 ## Changelog
 
-[23/07/11] Now we support training the **Baichuan-13B** model in this repo. Try `--model_name_or_path baichuan-inc/Baichuan-13B-Base` and `--lora_target W_pack` arguments to use the Baichuan-13B model. Remember to use `--prompt_template baichuan` argument when you are using the Baichuan-13B-Chat model.
+[23/07/11] Now we support training the **Baichuan-13B** model in this repo. Try `--model_name_or_path baichuan-inc/Baichuan-13B-Base`, `--padding_side right` and `--lora_target W_pack` arguments to train the Baichuan-13B model. Remember to use `--prompt_template baichuan` argument when you are using the Baichuan-13B-Chat model.
 
 [23/07/09] Now we release [FastEdit](https://github.com/hiyouga/FastEdit)⚡🩹, an easy-to-use package for editing the factual knowledge of large language models efficiently. Please follow [FastEdit](https://github.com/hiyouga/FastEdit) if you are interested.
 
@@ -73,6 +74,7 @@
   - [UltraChat](https://github.com/thunlp/UltraChat)
   - [Open Assistant](https://huggingface.co/datasets/OpenAssistant/oasst1)
   - [Open Assistant (Chinese)](https://huggingface.co/datasets/OpenAssistant/oasst1)
+  - [WebNovel (Chinese)](https://huggingface.co/datasets/zxbsmk/webnovel_cn)
 - For reward model training:
   - [HH-RLHF](https://huggingface.co/datasets/Anthropic/hh-rlhf)
   - [Open Assistant](https://huggingface.co/datasets/OpenAssistant/oasst1)
@@ -94,7 +96,7 @@ huggingface-cli login
 - Python 3.8+ and PyTorch 1.13.1+
 - 🤗Transformers, Datasets, Accelerate, PEFT and TRL
 - jieba, rouge-chinese and nltk (used at evaluation)
-- gradio and mdtex2html (used in web_demo.py)
+- gradio and matplotlib (used in web_demo.py)
 - uvicorn, fastapi and sse-starlette (used in api_demo.py)
 
 And **powerful GPUs**!
@@ -136,7 +138,8 @@ python -m transformers.models.llama.convert_llama_weights_to_hf \
 ### (Continually) Pre-Training
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python src/train_pt.py \
+CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
+    --stage pt \
     --model_name_or_path path_to_your_model \
     --do_train \
     --dataset wiki_demo \
@@ -157,7 +160,8 @@ CUDA_VISIBLE_DEVICES=0 python src/train_pt.py \
 ### Supervised Fine-Tuning
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python src/train_sft.py \
+CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
+    --stage sft \
     --model_name_or_path path_to_your_model \
     --do_train \
     --dataset alpaca_gpt4_en \
@@ -178,8 +182,9 @@ CUDA_VISIBLE_DEVICES=0 python src/train_sft.py \
 ### Reward Model Training
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python src/train_rm.py \
-    --model_name_or_path /d1/data/chuxiong/my_llm/output/baichuan-7b-sft \
+CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
+    --stage rm \
+    --model_name_or_path path_to_your_model \
     --do_train \
     --dataset comparison_gpt4_zh \
     --finetuning_type lora \
@@ -198,7 +203,8 @@ CUDA_VISIBLE_DEVICES=0 python src/train_rm.py \
 ### PPO Training (RLHF)
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python src/train_ppo.py \
+CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
+    --stage ppo \
     --model_name_or_path path_to_your_model \
     --do_train \
     --dataset alpaca_gpt4_en \
@@ -221,7 +227,7 @@ CUDA_VISIBLE_DEVICES=0 python src/train_ppo.py \
 
 ```bash
 accelerate config # configure the environment
-accelerate launch src/train_XX.py # arguments (same as above)
+accelerate launch src/train_bash.py # arguments (same as above)
 ```
 
 <details><summary>Example configuration for full-tuning with DeepSpeed ZeRO-2</summary>
@@ -255,7 +261,8 @@ use_cpu: false
 ### Evaluation (BLEU and ROUGE_CHINESE)
 
 ```bash
-CUDA_VISIBLE_DEVICES=0 python src/train_sft.py \
+CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
+    --stage pt \
     --model_name_or_path path_to_your_model \
     --do_eval \
     --dataset alpaca_gpt4_en \

@@ -1,15 +1,12 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*__pycache__*
 *.py[cod]
 *$py.class
 
 # C extensions
 *.so
 
-<<<<<<< HEAD
-=======
 !dataset_info.json
->>>>>>> 11f8b19747b3b9f49c237f0fc03719575392c22d
 # Distribution / packaging
 .Python
 build/

@@ -5,19 +5,11 @@
 # https://github.com/CarperAI/trlx/blob/main/examples/summarize_rlhf/reward_model/train_reward_model_gptj.py
 
 # Need to call this before importing transformers.
-<<<<<<< HEAD
-from llama_flash_attn_monkey_patch import (
-    replace_llama_attn_with_flash_attn,
-)
-
-replace_llama_attn_with_flash_attn()
-=======
 # from llama_flash_attn_monkey_patch import (
 #     replace_llama_attn_with_flash_attn,
 # )
 
 # replace_llama_attn_with_flash_attn()
->>>>>>> 11f8b19747b3b9f49c237f0fc03719575392c22d
 
 from utils import (
     PairwiseDataCollatorWithPadding,

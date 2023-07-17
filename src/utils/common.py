@@ -210,13 +210,22 @@ def load_pretrained(
         model_to_load = model_args.model_name_or_path
 
     # Load and prepare pretrained models (without valuehead).
-    model = AutoModelForCausalLM.from_pretrained(
-        model_to_load,
-        config=config,
-        torch_dtype=torch.bfloat16 if model_args.compute_dtype == torch.bfloat16 else torch.float16,
-        low_cpu_mem_usage=True,
-        **config_kwargs
-    )
+    try:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_to_load,
+            config=config,
+            torch_dtype=torch.bfloat16 if model_args.compute_dtype == torch.bfloat16 else torch.float16,
+            low_cpu_mem_usage=True,
+            **config_kwargs
+        )
+    except:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_to_load,
+            config=config,
+            torch_dtype=torch.bfloat16 if model_args.compute_dtype == torch.bfloat16 else torch.float16,
+            low_cpu_mem_usage=False,
+            **config_kwargs
+        )
 
     # Register auto class to save the custom code files.
     if hasattr(config, "auto_map") and "AutoConfig" in config.auto_map:

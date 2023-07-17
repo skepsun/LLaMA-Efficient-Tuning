@@ -225,6 +225,15 @@
       "history": "history"
     }
   },
+  "moss_and_ultrachat": {
+    "script_url": "moss_and_ultrachat",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
+  },
   "hh_rlhf_en": {
     "script_url": "hh_rlhf_en",
     "columns": {
@@ -294,9 +303,9 @@
   "all_cn_laws": {
     "script_url": "all_cn_laws",
     "columns": {
-      "prompt": "text",
+      "prompt": "",
       "query": "",
-      "response": "",
+      "response": "text",
       "history": ""
     }
   },

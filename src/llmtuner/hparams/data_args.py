@@ -44,7 +44,7 @@ class DataArguments:
         metadata={"help": "Overwrite the cached training and evaluation sets."}
     )
     preprocessing_num_workers: Optional[int] = field(
-        default=None,
+        default=8,
         metadata={"help": "The number of processes to use for the preprocessing."}
     )
     max_source_length: Optional[int] = field(
@@ -55,7 +55,7 @@ class DataArguments:
         default=512,
         metadata={"help": "The maximum total output sequence length after tokenization."}
     )
-    max_samples: Optional[int] = field(
+    max_samples: Optional[str] = field(
         default=None,
         metadata={"help": "For debugging purposes, truncate the number of examples for each dataset."}
     )
@@ -82,6 +82,8 @@ class DataArguments:
 
     def init_for_training(self): # support mixing multiple datasets
         dataset_names = [ds.strip() for ds in self.dataset.split(",")]
+        if self.max_samples is not None:
+            self.max_samples =  [int(num) for num in self.max_samples.split(",")]
         with open(os.path.join(self.dataset_dir, "dataset_info.json"), "r") as f:
             dataset_info = json.load(f)
 

@@ -31,6 +31,7 @@ class FinetuningArguments:
                   BLOOM & Falcon choices: [\"mlp\", \"self_attention\"], \
                   Baichuan choices: [\"mlp\", \"self_attn\"]"}
     )
+    modules_to_save : Optional[str] = field(default=None)
     lora_rank: Optional[int] = field(
         default=8,
         metadata={"help": "The intrinsic dimension for LoRA fine-tuning."}
@@ -55,11 +56,13 @@ class FinetuningArguments:
         if isinstance(self.lora_target, str): # support custom target modules/layers of LoRA
             self.lora_target = [target.strip() for target in self.lora_target.split(",")]
 
+
         if self.num_layer_trainable > 0: # fine-tuning the last n layers if num_layer_trainable > 0
             trainable_layer_ids = [self.num_hidden_layers - k - 1 for k in range(self.num_layer_trainable)]
         else: # fine-tuning the first n layers if num_layer_trainable < 0
             trainable_layer_ids = [k for k in range(-self.num_layer_trainable)]
-
+        if self.modules_to_save is not None:
+            self.modules_to_save = self.modules_to_save.split(',')
         self.trainable_layers = ["{:d}.{}".format(idx, self.name_module_trainable) for idx in trainable_layer_ids]
 
         assert self.finetuning_type in ["none", "freeze", "lora", "full"], "Invalid fine-tuning method."

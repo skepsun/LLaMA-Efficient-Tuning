@@ -11,6 +11,12 @@ class ModelArguments:
     model_name_or_path: str = field(
         metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models."}
     )
+    tokenizer_path: Optional[str] = field(
+        default=None,
+    )
+    extend_vocab: Optional[bool] = field(
+        default=False,
+    )
     cache_dir: Optional[str] = field(
         default=None,
         metadata={"help": "Where to store the pretrained models downloaded from huggingface.co."}

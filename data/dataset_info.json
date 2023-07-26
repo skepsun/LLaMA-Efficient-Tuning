@@ -23,6 +23,15 @@
       "history": "history"
     }
   },
+  "medical": {
+    "script_url": "medical",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": ""
+    }
+  },
   "belle_0.5m": {
     "hf_hub_url": "BelleGroup/train_0.5M_CN"
   },
@@ -293,6 +302,15 @@
       "history": ""
     }
   },
+  "flores": {
+    "hf_hub_url": "facebook/flores",
+    "columns": {
+      "prompt": "sentence",
+      "query": "",
+      "response": "",
+      "history": ""
+    }
+  },
   "wiki_demo": {
     "file_name": "wiki_demo.txt",
     "file_sha1": "b2288edb05b233e5b35250fd4b308a5fa21fa66d",
@@ -318,6 +336,69 @@
       "prompt": "text",
       "query": "",
       "response": "",
+      "history": ""
+    }
+  },
+  "linly_pretrain": {
+    "hf_hub_url": "Linly-AI/Chinese-pretraining-dataset",
+    "columns": {
+      "prompt": "text",
+      "query": "",
+      "response": "",
+      "history": ""
+    }
+  },
+  "enwiki_100k": {
+    "hf_hub_url": "teven/enwiki_100k",
+    "columns": {
+      "prompt": "text",
+      "query": "",
+      "response": "",
+      "history": ""
+    }
+  },
+  "wudao": {
+    "script_url": "/d2/data/chuxiong/WuDaoCorpus2.0_base_200G",
+    "columns": {
+      "prompt": "content",
+      "query": "",
+      "response": "",
+      "history": ""
+    }
+  },
+  "small_pile": {
+    "script_url": "/d2/data/chuxiong/small-the_pile",
+    "columns": {
+      "prompt": "text",
+      "query": "",
+      "response": "",
+      "history": ""
+    }
+  },
+  "collected_chinese": {
+    "script_url": "/d1/data/chuxiong/dataset/chinese_corpus_collection/txt",
+    "columns": {
+      "prompt": "text",
+      "query": "",
+      "response": "",
+      "history": ""
+    }
+  },
+  "redpajama_sample": {
+    "script_url": "/d2/data/chuxiong/RedPajama-Data-1T-Sample",
+    "columns": {
+      "prompt": "text",
+      "query": "",
+      "response": "",
+      "history": ""
+    }
+  },
+  "news": {
+    "file_name": "news_150k_gene_150k.jsonl",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
       "history": ""
     }
   }

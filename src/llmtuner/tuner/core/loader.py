@@ -55,9 +55,9 @@ def load_model_and_tokenizer(
         "revision": model_args.model_revision,
         "use_auth_token": True if model_args.use_auth_token else None,
     }
-
+    tokenizer_path = model_args.model_name_or_path if model_args.tokenizer_path is None else model_args.tokenizer_path
     tokenizer = AutoTokenizer.from_pretrained(
-        model_args.model_name_or_path,
+        tokenizer_path,
         use_fast=model_args.use_fast_tokenizer,
         padding_side=model_args.padding_side,
         **config_kwargs
@@ -104,14 +104,28 @@ def load_model_and_tokenizer(
         model_to_load = model_args.model_name_or_path
 
     # Load and prepare pretrained models (without valuehead).
-    model = AutoModelForCausalLM.from_pretrained(
-        model_to_load,
-        config=config,
-        torch_dtype=torch.bfloat16 if model_args.compute_dtype == torch.bfloat16 else torch.float16,
-        low_cpu_mem_usage=True,
-        **config_kwargs
-    )
-
+    try:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_to_load,
+            config=config,
+            torch_dtype=torch.bfloat16 if model_args.compute_dtype == torch.bfloat16 else torch.float16,
+            low_cpu_mem_usage=True,
+            **config_kwargs
+        )
+    except:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_to_load,
+            config=config,
+            torch_dtype=torch.bfloat16 if model_args.compute_dtype == torch.bfloat16 else torch.float16,
+            low_cpu_mem_usage=False,
+            **config_kwargs
+        )
+    if model_args.extend_vocab:
+        model.resize_token_embeddings(len(tokenizer))
+    # if model_args.extend_vocab:
+    #     for name, param in model.named_parameters():
+    #         if ("model.embed_tokens" not in name) and ("lm_head" not in name):
+    #             param.requires_grad = False
     # Register auto class to save the custom code files.
     if isinstance(config, PretrainedConfig) and "AutoConfig" in getattr(config, "auto_map", {}):
         config.__class__.register_for_auto_class()

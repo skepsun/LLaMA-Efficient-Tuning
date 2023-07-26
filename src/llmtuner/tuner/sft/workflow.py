@@ -1,39 +1,3 @@
-<<<<<<< HEAD:src/train_sft.py
-# coding=utf-8
-# Implements several parameter-efficient supervised fine-tuning method.
-# This code is inspired by
-# https://github.com/huggingface/transformers/blob/v4.29.2/examples/pytorch/summarization/run_summarization.py
-
-# Need to call this before importing transformers.
-# from llama_flash_attn_monkey_patch import (
-#     replace_llama_attn_with_flash_attn,
-# )
-
-# replace_llama_attn_with_flash_attn()
-
-from utils import (
-    DynamicDataCollatorWithPadding,
-    Seq2SeqPeftTrainer,
-    ComputeMetrics,
-    LogCallback,
-    load_pretrained,
-    prepare_args,
-    prepare_data,
-    preprocess_data,
-    get_logits_processor,
-    plot_loss
-)
-
-
-def main():
-
-    # Prepare pretrained model and dataset
-    model_args, data_args, training_args, finetuning_args = prepare_args(stage="sft")
-    dataset = prepare_data(model_args, data_args)
-    model, tokenizer = load_pretrained(model_args, finetuning_args, training_args.do_train, stage="sft")
-    dataset = preprocess_data(dataset, tokenizer, data_args, training_args, stage="sft")
-    data_collator = DynamicDataCollatorWithPadding(
-=======
 # Inspired by: https://github.com/huggingface/transformers/blob/v4.29.2/examples/pytorch/summarization/run_summarization.py
 
 from typing import Optional, List
@@ -61,7 +25,6 @@ def run_sft(
     model, tokenizer = load_model_and_tokenizer(model_args, finetuning_args, training_args.do_train, stage="sft")
     dataset = preprocess_dataset(dataset, tokenizer, data_args, training_args, stage="sft")
     data_collator = DataCollatorForSeq2Seq(
->>>>>>> 1e1358431dde1ed774b0e1e48760ca9f0db685ef:src/llmtuner/tuner/sft/workflow.py
         tokenizer=tokenizer,
         label_pad_token_id=IGNORE_INDEX if data_args.ignore_pad_token_for_loss else tokenizer.pad_token_id
     )

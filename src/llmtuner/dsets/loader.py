@@ -31,9 +31,12 @@ def get_dataset(
     }
 
     max_samples = data_args.max_samples
+    if max_samples is not None:
+        if len(max_samples) < len(data_args.dataset_list):
+            max_samples = max_samples + [max_samples[-1]] * (len(data_args.dataset_list) - len(max_samples))
     all_datasets: List[Dataset] = [] # support multiple datasets
 
-    for dataset_attr in data_args.dataset_list:
+    for idx, dataset_attr in enumerate(data_args.dataset_list):
 
         logger.info("Loading dataset {}...".format(dataset_attr))
 
@@ -79,7 +82,8 @@ def get_dataset(
         dataset = raw_datasets[data_args.split]
 
         if max_samples is not None:
-            max_samples_temp = min(len(dataset), max_samples)
+            max_samples_temp = min(len(dataset), max_samples[idx])
+            dataset = dataset.shuffle()
             dataset = dataset.select(range(max_samples_temp))
 
         dummy_data = [None] * len(dataset)

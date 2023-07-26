@@ -10,6 +10,7 @@ from transformers import (
 )
 from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
+from transformers.deepspeed import is_deepspeed_zero3_enabled
 from transformers.modeling_utils import PretrainedConfig, PreTrainedModel
 from transformers.tokenization_utils import PreTrainedTokenizerBase
 from trl import AutoModelForCausalLMWithValueHead
@@ -26,9 +27,9 @@ logger = get_logger(__name__)
 
 check_min_version("4.29.1")
 require_version("datasets>=2.12.0", "To fix: pip install datasets>=2.12.0")
-require_version("accelerate>=0.19.0", "To fix: pip install accelerate>=0.19.0")
-require_version("peft>=0.3.0", "To fix: pip install peft>=0.3.0")
-require_version("trl>=0.4.4", "To fix: pip install trl>=0.4.4")
+require_version("accelerate>=0.21.0", "To fix: pip install accelerate>=0.21.0")
+require_version("peft>=0.4.0", "To fix: pip install peft>=0.4.0")
+require_version("trl>=0.4.7", "To fix: pip install trl>=0.4.7")
 
 
 def load_model_and_tokenizer(
@@ -80,9 +81,6 @@ def load_model_and_tokenizer(
 
         elif model_args.quantization_bit == 4:
             require_version("bitsandbytes>=0.39.0", "To fix: pip install bitsandbytes>=0.39.0")
-            require_version("transformers>=4.30.1", "To fix: pip install transformers>=4.30.1")
-            require_version("accelerate>=0.20.3", "To fix: pip install accelerate>=0.20.3")
-            require_version("peft>=0.4.0.dev0", "To fix: pip install git+https://github.com/huggingface/peft.git")
             config_kwargs["load_in_4bit"] = True
             config_kwargs["quantization_config"] = BitsAndBytesConfig(
                 load_in_4bit=True,
@@ -95,37 +93,20 @@ def load_model_and_tokenizer(
         config_kwargs["device_map"] = {"": int(os.environ.get("LOCAL_RANK", "0"))}
         logger.info("Quantizing model to {} bit.".format(model_args.quantization_bit))
 
-    if not is_trainable: # `device_map=auto` should be used for inference only
-        config_kwargs["device_map"] = "auto"
-
     if model_args.checkpoint_dir is not None and finetuning_args.finetuning_type == "full":
         model_to_load = model_args.checkpoint_dir[0]
     else:
         model_to_load = model_args.model_name_or_path
 
     # Load and prepare pretrained models (without valuehead).
-    try:
-        model = AutoModelForCausalLM.from_pretrained(
-            model_to_load,
-            config=config,
-            torch_dtype=torch.bfloat16 if model_args.compute_dtype == torch.bfloat16 else torch.float16,
-            low_cpu_mem_usage=True,
-            **config_kwargs
-        )
-    except:
-        model = AutoModelForCausalLM.from_pretrained(
-            model_to_load,
-            config=config,
-            torch_dtype=torch.bfloat16 if model_args.compute_dtype == torch.bfloat16 else torch.float16,
-            low_cpu_mem_usage=False,
-            **config_kwargs
-        )
-    if model_args.extend_vocab:
-        model.resize_token_embeddings(len(tokenizer))
-    # if model_args.extend_vocab:
-    #     for name, param in model.named_parameters():
-    #         if ("model.embed_tokens" not in name) and ("lm_head" not in name):
-    #             param.requires_grad = False
+    model = AutoModelForCausalLM.from_pretrained(
+        model_to_load,
+        config=config,
+        torch_dtype=torch.bfloat16 if model_args.compute_dtype == torch.bfloat16 else torch.float16,
+        low_cpu_mem_usage=(not is_deepspeed_zero3_enabled()),
+        **config_kwargs
+    )
+
     # Register auto class to save the custom code files.
     if isinstance(config, PretrainedConfig) and "AutoConfig" in getattr(config, "auto_map", {}):
         config.__class__.register_for_auto_class()

@@ -2,9 +2,10 @@
 # https://github.com/lvwerra/trl/blob/main/examples/summarization/scripts/reward_summarization.py
 # https://github.com/CarperAI/trlx/blob/main/examples/summarize_rlhf/reward_model/train_reward_model_gptj.py
 
-from transformers import Seq2SeqTrainingArguments
+from typing import Optional, List
+from transformers import Seq2SeqTrainingArguments, TrainerCallback
 
-from llmtuner.dsets import get_dataset, preprocess_dataset
+from llmtuner.dsets import get_dataset, preprocess_dataset, split_dataset
 from llmtuner.extras.callbacks import LogCallback
 from llmtuner.extras.ploting import plot_loss
 from llmtuner.hparams import ModelArguments, DataArguments, FinetuningArguments
@@ -18,7 +19,8 @@ def run_rm(
     model_args: ModelArguments,
     data_args: DataArguments,
     training_args: Seq2SeqTrainingArguments,
-    finetuning_args: FinetuningArguments
+    finetuning_args: FinetuningArguments,
+    callbacks: Optional[List[TrainerCallback]] = [LogCallback()]
 ):
     dataset = get_dataset(model_args, data_args)
     model, tokenizer = load_model_and_tokenizer(model_args, finetuning_args, training_args.do_train, stage="rm")
@@ -27,16 +29,6 @@ def run_rm(
 
     training_args.remove_unused_columns = False # important for pairwise dataset
 
-    # Split the dataset
-    if training_args.do_train:
-        if data_args.dev_ratio > 1e-6:
-            dataset = dataset.train_test_split(test_size=data_args.dev_ratio)
-            trainer_kwargs = {"train_dataset": dataset["train"], "eval_dataset": dataset["test"]}
-        else:
-            trainer_kwargs = {"train_dataset": dataset}
-    else: # do_eval or do_predict
-        trainer_kwargs = {"eval_dataset": dataset}
-
     # Initialize our Trainer
     trainer = PairwisePeftTrainer(
         finetuning_args=finetuning_args,
@@ -44,9 +36,9 @@ def run_rm(
         args=training_args,
         tokenizer=tokenizer,
         data_collator=data_collator,
-        callbacks=[LogCallback()],
+        callbacks=callbacks,
         compute_metrics=compute_accuracy,
-        **trainer_kwargs
+        **split_dataset(dataset, data_args.dev_ratio, training_args.do_train)
     )
 
     # Training
@@ -64,3 +56,10 @@ def run_rm(
         metrics = trainer.evaluate(metric_key_prefix="eval")
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
+
+    # Predict
+    if training_args.do_predict:
+        predict_results = trainer.predict(dataset, metric_key_prefix="predict")
+        trainer.log_metrics("predict", predict_results.metrics)
+        trainer.save_metrics("predict", predict_results.metrics)
+        trainer.save_predictions(predict_results)

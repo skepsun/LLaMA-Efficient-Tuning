@@ -1,9 +1,10 @@
+import torch
 from typing import Any, Dict, Generator, List, Optional, Tuple
 from threading import Thread
 from transformers import TextIteratorStreamer
 
 from llmtuner.extras.misc import get_logits_processor
-from llmtuner.extras.template import Template
+from llmtuner.extras.template import get_template
 from llmtuner.hparams import ModelArguments, DataArguments, FinetuningArguments, GeneratingArguments
 from llmtuner.tuner import load_model_and_tokenizer
 
@@ -18,19 +19,28 @@ class ChatModel:
         generating_args: GeneratingArguments
     ) -> None:
         self.model, self.tokenizer = load_model_and_tokenizer(model_args, finetuning_args)
-        self.template = Template(data_args.prompt_template)
-        self.source_prefix = data_args.source_prefix if data_args.source_prefix else ""
+
+        if torch.cuda.device_count() > 1:
+            from accelerate import dispatch_model, infer_auto_device_map
+            device_map = infer_auto_device_map(self.model)
+            self.model = dispatch_model(self.model, device_map)
+        else:
+            self.model = self.model.cuda()
+
+        self.template = get_template(data_args.prompt_template)
+        self.source_prefix = data_args.source_prefix or ""
         self.generating_args = generating_args
 
     def process_args(
         self, query: str, history: Optional[List[Tuple[str, str]]] = None, prefix: Optional[str] = None, **input_kwargs
     ) -> Tuple[Dict[str, Any], int]:
-        prefix = prefix if prefix else self.source_prefix
+        prefix = prefix or self.source_prefix
 
         inputs = self.tokenizer([self.template.get_prompt(query, history, prefix)], return_tensors="pt")
         inputs = inputs.to(self.model.device)
         prompt_length = len(inputs["input_ids"][0])
 
+        do_sample = input_kwargs.pop("do_sample", None)
         temperature = input_kwargs.pop("temperature", None)
         top_p = input_kwargs.pop("top_p", None)
         top_k = input_kwargs.pop("top_k", None)
@@ -41,10 +51,11 @@ class ChatModel:
         gen_kwargs = self.generating_args.to_dict()
         gen_kwargs.update(dict(
             input_ids=inputs["input_ids"],
-            temperature=temperature if temperature else gen_kwargs["temperature"],
-            top_p=top_p if top_p else gen_kwargs["top_p"],
-            top_k=top_k if top_k else gen_kwargs["top_k"],
-            repetition_penalty=repetition_penalty if repetition_penalty else gen_kwargs["repetition_penalty"],
+            do_sample=do_sample if do_sample is not None else gen_kwargs["do_sample"],
+            temperature=temperature or gen_kwargs["temperature"],
+            top_p=top_p or gen_kwargs["top_p"],
+            top_k=top_k or gen_kwargs["top_k"],
+            repetition_penalty=repetition_penalty or gen_kwargs["repetition_penalty"],
             logits_processor=get_logits_processor()
         ))
 
@@ -58,6 +69,7 @@ class ChatModel:
 
         return gen_kwargs, prompt_length
 
+    @torch.inference_mode()
     def chat(
         self, query: str, history: Optional[List[Tuple[str, str]]] = None, prefix: Optional[str] = None, **input_kwargs
     ) -> Tuple[str, Tuple[int, int]]:
@@ -68,6 +80,7 @@ class ChatModel:
         response_length = len(outputs)
         return response, (prompt_length, response_length)
 
+    @torch.inference_mode()
     def stream_chat(
         self, query: str, history: Optional[List[Tuple[str, str]]] = None, prefix: Optional[str] = None, **input_kwargs
     ) -> Generator[str, None, None]:
@@ -78,5 +91,4 @@ class ChatModel:
         thread = Thread(target=self.model.generate, kwargs=gen_kwargs)
         thread.start()
 
-        for new_text in streamer:
-            yield new_text
+        yield from streamer

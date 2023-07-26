@@ -6,7 +6,7 @@ from transformers.tokenization_utils import PreTrainedTokenizer
 from datasets import Dataset
 
 from llmtuner.extras.constants import IGNORE_INDEX
-from llmtuner.extras.template import Template
+from llmtuner.extras.template import get_template
 from llmtuner.hparams import DataArguments
 
 
@@ -19,7 +19,7 @@ def preprocess_dataset(
 ) -> Dataset:
 
     column_names = list(dataset.column_names)
-    prompt_template = Template(data_args.prompt_template)
+    prompt_template = get_template(data_args.prompt_template)
 
     # support question with a single answer or multiple answers
     def get_dialog(examples):
@@ -143,8 +143,10 @@ def preprocess_dataset(
     if stage == "pt":
         preprocess_function = preprocess_pretrain_dataset
     elif stage == "sft":
-        preprocess_function = preprocess_unsupervised_dataset \
-            if training_args.predict_with_generate else preprocess_supervised_dataset
+        if not training_args.predict_with_generate:
+            preprocess_function = preprocess_supervised_dataset
+        else:
+            preprocess_function = preprocess_unsupervised_dataset
     elif stage == "rm":
         preprocess_function = preprocess_pairwise_dataset
     elif stage == "ppo":

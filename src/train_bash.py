@@ -1,7 +1,7 @@
-from llama_flash_attn_monkey_patch import (
-    replace_llama_attn_with_flash_attn,
-)
-replace_llama_attn_with_flash_attn()
+# from llama_flash_attn_monkey_patch import (
+#     replace_llama_attn_with_flash_attn,
+# )
+# replace_llama_attn_with_flash_attn()
 
 from llmtuner.tuner import get_train_args, run_pt, run_sft, run_rm, run_ppo
 

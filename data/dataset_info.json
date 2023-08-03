@@ -466,5 +466,23 @@
       "response": "output",
       "history": ""
     }
+  },
+  "524_legal": {
+    "file_name": "524_crime52lvtu60shouce92kjudical2legal5.json",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": ""
+    }
+  },
+  "sharegpt_chinese_90k":{
+    "script_url": "sharegpt_chinese_90k",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
   }
 }

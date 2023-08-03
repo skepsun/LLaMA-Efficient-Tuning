@@ -1,42 +1,37 @@
 import torch
+from types import MethodType
 from typing import Any, Dict, Generator, List, Optional, Tuple
 from threading import Thread
-from transformers import TextIteratorStreamer
+from transformers import PreTrainedModel, TextIteratorStreamer
 
-from llmtuner.extras.misc import get_logits_processor
+from llmtuner.extras.misc import dispatch_model, get_logits_processor, get_stopwords_criteria
 from llmtuner.extras.template import get_template
-from llmtuner.hparams import ModelArguments, DataArguments, FinetuningArguments, GeneratingArguments
-from llmtuner.tuner import load_model_and_tokenizer
+from llmtuner.tuner.core import get_infer_args, load_model_and_tokenizer
 
 
 class ChatModel:
 
-    def __init__(
-        self,
-        model_args: ModelArguments,
-        data_args: DataArguments,
-        finetuning_args: FinetuningArguments,
-        generating_args: GeneratingArguments
-    ) -> None:
+    def __init__(self, args: Optional[Dict[str, Any]] = None) -> None:
+        model_args, data_args, finetuning_args, self.generating_args = get_infer_args(args)
         self.model, self.tokenizer = load_model_and_tokenizer(model_args, finetuning_args)
-
-        if torch.cuda.device_count() > 1:
-            from accelerate import dispatch_model, infer_auto_device_map
-            device_map = infer_auto_device_map(self.model)
-            self.model = dispatch_model(self.model, device_map)
-        else:
-            self.model = self.model.cuda()
-
-        self.template = get_template(data_args.prompt_template)
-        self.source_prefix = data_args.source_prefix or ""
-        self.generating_args = generating_args
+        self.model = dispatch_model(self.model)
+        self.template = get_template(data_args.template)
+        self.source_prefix = data_args.source_prefix
+        self.stop_ids = self.tokenizer.convert_tokens_to_ids(self.template.stop_words)
+        self.tokenizer.add_special_tokens(dict(additional_special_tokens=self.template.stop_words))
+        self.model.generate = MethodType(PreTrainedModel.generate, self.model) # a monkey fix for qwen model
 
     def process_args(
-        self, query: str, history: Optional[List[Tuple[str, str]]] = None, prefix: Optional[str] = None, **input_kwargs
+        self,
+        query: str,
+        history: Optional[List[Tuple[str, str]]] = None,
+        prefix: Optional[str] = None,
+        **input_kwargs
     ) -> Tuple[Dict[str, Any], int]:
         prefix = prefix or self.source_prefix
 
-        inputs = self.tokenizer([self.template.get_prompt(query, history, prefix)], return_tensors="pt")
+        prompt = self.template.get_prompt(query, history, prefix, self.tokenizer.eos_token)
+        inputs = self.tokenizer([prompt], return_tensors="pt")
         inputs = inputs.to(self.model.device)
         prompt_length = len(inputs["input_ids"][0])
 
@@ -56,7 +51,8 @@ class ChatModel:
             top_p=top_p or gen_kwargs["top_p"],
             top_k=top_k or gen_kwargs["top_k"],
             repetition_penalty=repetition_penalty or gen_kwargs["repetition_penalty"],
-            logits_processor=get_logits_processor()
+            logits_processor=get_logits_processor(),
+            stopping_criteria=get_stopwords_criteria(self.stop_ids)
         ))
 
         if max_length:
@@ -71,7 +67,11 @@ class ChatModel:
 
     @torch.inference_mode()
     def chat(
-        self, query: str, history: Optional[List[Tuple[str, str]]] = None, prefix: Optional[str] = None, **input_kwargs
+        self,
+        query: str,
+        history: Optional[List[Tuple[str, str]]] = None,
+        prefix: Optional[str] = None,
+        **input_kwargs
     ) -> Tuple[str, Tuple[int, int]]:
         gen_kwargs, prompt_length = self.process_args(query, history, prefix, **input_kwargs)
         generation_output = self.model.generate(**gen_kwargs)
@@ -82,7 +82,11 @@ class ChatModel:
 
     @torch.inference_mode()
     def stream_chat(
-        self, query: str, history: Optional[List[Tuple[str, str]]] = None, prefix: Optional[str] = None, **input_kwargs
+        self,
+        query: str,
+        history: Optional[List[Tuple[str, str]]] = None,
+        prefix: Optional[str] = None,
+        **input_kwargs
     ) -> Generator[str, None, None]:
         gen_kwargs, _ = self.process_args(query, history, prefix, **input_kwargs)
         streamer = TextIteratorStreamer(self.tokenizer, timeout=60.0, skip_prompt=True, skip_special_tokens=True)

@@ -12,15 +12,21 @@
 
 ## 更新日志
 
-[23/07/19] 现在我们支持了 **LLaMA-2** 模型的训练。请尝试使用 `--model_name_or_path meta-llama/Llama-2-7b-hf` 参数。请注意使用 LLaMA-2-chat 模型需要添加 `--prompt_template llama2` 参数。
+[23/08/03] 现在我们支持了 **Qwen-7B** 模型的训练。请尝试使用 `--model_name_or_path Qwen/Qwen-7B-Chat` 和 `--lora_target c_attn` 参数。请注意使用 Qwen-7B-Chat 模型需要添加 `--template chatml` 参数。
+
+[23/07/31] 现在我们支持了训练数据流式加载。请尝试使用 `--streaming` 和 `--max_steps 100` 参数来流式加载数据集。
+
+[23/07/29] 我们在 Hugging Face 发布了两个 13B 指令微调模型。详细内容请查阅我们的 Hugging Face 项目（[LLaMA-2](https://huggingface.co/hiyouga/Llama-2-Chinese-13b-chat) / [Baichuan](https://huggingface.co/hiyouga/baichuan-13b-sft)）。
+
+[23/07/19] 现在我们支持了 **LLaMA-2** 模型的训练。请尝试使用 `--model_name_or_path meta-llama/Llama-2-7b-hf` 参数。请注意使用 LLaMA-2-chat 模型需要添加 `--template llama2` 参数。
 
 [23/07/18] 我们开发了支持训练和测试的浏览器一键微调界面。请尝试使用 `train_web.py` 在您的浏览器中微调模型。感谢 [@KanadeSiina](https://github.com/KanadeSiina) 和 [@codemayq](https://github.com/codemayq) 在该功能开发中付出的努力。
 
-[23/07/11] 现在我们支持了 **Baichuan-13B** 模型的训练。请尝试使用 `--model_name_or_path path_to_baichuan_model` 和 `--lora_target W_pack` 参数。请注意使用 Baichuan-13B-Chat 模型需要添加 `--prompt_template baichuan` 参数。
+[23/07/11] 现在我们支持了 **Baichuan-13B** 模型的训练。请尝试使用 `--model_name_or_path baichuan-inc/Baichuan-13B-Base` 和 `--lora_target W_pack` 参数。请注意使用 Baichuan-13B-Chat 模型需要添加 `--template baichuan` 参数。
 
 [23/07/09] 我们开源了 [FastEdit](https://github.com/hiyouga/FastEdit)⚡🩹，一个简单易用的、能迅速编辑大模型事实记忆的工具包。如果您感兴趣请关注我们的 [FastEdit](https://github.com/hiyouga/FastEdit) 项目。
 
-[23/07/07] 现在我们支持了 **InternLM-7B** 模型的训练。请尝试使用 `--model_name_or_path internlm/internlm-7b` 参数。请注意使用 InternLM-chat 模型需要添加 `--prompt_template intern` 参数。
+[23/07/07] 现在我们支持了 **InternLM-7B** 模型的训练。请尝试使用 `--model_name_or_path internlm/internlm-7b` 参数。请注意使用 InternLM-chat 模型需要添加 `--template intern` 参数。
 
 [23/07/05] 现在我们支持了 **Falcon-7B/40B** 模型的训练。请尝试使用 `--model_name_or_path tiiuae/falcon-7b` 和 `--lora_target query_key_value` 参数。
 
@@ -42,6 +48,7 @@
 - [Falcon](https://huggingface.co/tiiuae/falcon-7b) (7B/40B)
 - [Baichuan](https://huggingface.co/baichuan-inc/baichuan-7B) (7B/13B)
 - [InternLM](https://github.com/InternLM/InternLM) (7B)
+- [Qwen](https://github.com/QwenLM/Qwen-7B) (7B)
 
 ## 微调方法
 
@@ -83,6 +90,7 @@
   - [BELLE School Math 0.25M (zh)](https://huggingface.co/datasets/BelleGroup/school_math_0.25M)
   - [BELLE Multiturn Chat 0.8M (zh)](https://huggingface.co/datasets/BelleGroup/multiturn_chat_0.8M)
   - [Firefly 1.1M (zh)](https://huggingface.co/datasets/YeungNLP/firefly-train-1.1M)
+  - [LIMA (en)](https://huggingface.co/datasets/GAIR/lima)
   - [CodeAlpaca 20k (en)](https://huggingface.co/datasets/sahil2801/CodeAlpaca-20k)
   - [Alpaca CoT (multilingual)](https://huggingface.co/datasets/QingyiSi/Alpaca-CoT)
   - [Web QA (zh)](https://huggingface.co/datasets/suolyer/webqa)
@@ -106,6 +114,7 @@ huggingface-cli login
 
 - Python 3.8+ 和 PyTorch 1.13.1+
 - 🤗Transformers, Datasets, Accelerate, PEFT 和 TRL
+- sentencepiece 和 tiktoken
 - jieba, rouge-chinese 和 nltk (用于评估)
 - gradio 和 matplotlib (用于网页端交互)
 - uvicorn, fastapi 和 sse-starlette (用于 API)
@@ -123,6 +132,7 @@ huggingface-cli login
 ### 环境搭建（可跳过）
 
 ```bash
+git lfs install
 git clone https://github.com/hiyouga/LLaMA-Efficient-Tuning.git
 conda create -n llama_etuning python=3.10
 conda activate llama_etuning
@@ -139,10 +149,10 @@ pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/downl
 ### 浏览器一键微调/测试
 
 ```bash
-python src/train_web.py
+CUDA_VISIBLE_DEVICES=0 python src/train_web.py
 ```
 
-目前网页 UI 仅支持单卡训练。
+目前网页 UI 仅支持**单卡训练**。
 
 ### 二次预训练
 
@@ -152,6 +162,7 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --model_name_or_path path_to_your_model \
     --do_train \
     --dataset wiki_demo \
+    --template default \
     --finetuning_type lora \
     --output_dir path_to_pt_checkpoint \
     --overwrite_cache \
@@ -173,7 +184,8 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage sft \
     --model_name_or_path path_to_your_model \
     --do_train \
-    --dataset alpaca_gpt4_en \
+    --dataset alpaca_gpt4_zh \
+    --template default \
     --finetuning_type lora \
     --output_dir path_to_sft_checkpoint \
     --overwrite_cache \
@@ -188,6 +200,8 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --fp16
 ```
 
+使用 Baichuan 模型时请指定 `--lora_target W_pack` 参数。
+
 ### 奖励模型训练
 
 ```bash
@@ -195,8 +209,11 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage rm \
     --model_name_or_path path_to_your_model \
     --do_train \
-    --dataset comparison_gpt4_en \
+    --dataset comparison_gpt4_zh \
+    --template default \
     --finetuning_type lora \
+    --resume_lora_training False \
+    --checkpoint_dir path_to_sft_checkpoint \
     --output_dir path_to_rm_checkpoint \
     --per_device_train_batch_size 4 \
     --gradient_accumulation_steps 4 \
@@ -216,8 +233,10 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage ppo \
     --model_name_or_path path_to_your_model \
     --do_train \
-    --dataset alpaca_gpt4_en \
+    --dataset alpaca_gpt4_zh \
+    --template default \
     --finetuning_type lora \
+    --resume_lora_training False \
     --checkpoint_dir path_to_sft_checkpoint \
     --reward_model path_to_rm_checkpoint \
     --output_dir path_to_ppo_checkpoint \
@@ -228,7 +247,6 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --save_steps 1000 \
     --learning_rate 1e-5 \
     --num_train_epochs 1.0 \
-    --resume_lora_training False \
     --plot_loss
 ```
 
@@ -274,7 +292,8 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage sft \
     --model_name_or_path path_to_your_model \
     --do_eval \
-    --dataset alpaca_gpt4_en \
+    --dataset alpaca_gpt4_zh \
+    --template default \
     --finetuning_type lora \
     --checkpoint_dir path_to_checkpoint \
     --output_dir path_to_eval_result \
@@ -292,7 +311,8 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage sft \
     --model_name_or_path path_to_your_model \
     --do_predict \
-    --dataset alpaca_gpt4_en \
+    --dataset alpaca_gpt4_zh \
+    --template default \
     --finetuning_type lora \
     --checkpoint_dir path_to_checkpoint \
     --output_dir path_to_predict_result \
@@ -301,13 +321,12 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --predict_with_generate
 ```
 
-如果需要预测的样本没有标签，请首先在 `response` 列中填入一些占位符，以免样本在预处理阶段被丢弃。
-
 ### API 服务
 
 ```bash
 python src/api_demo.py \
     --model_name_or_path path_to_your_model \
+    --template default \
     --finetuning_type lora \
     --checkpoint_dir path_to_checkpoint
 ```
@@ -319,6 +338,7 @@ python src/api_demo.py \
 ```bash
 python src/cli_demo.py \
     --model_name_or_path path_to_your_model \
+    --template default \
     --finetuning_type lora \
     --checkpoint_dir path_to_checkpoint
 ```
@@ -328,6 +348,7 @@ python src/cli_demo.py \
 ```bash
 python src/web_demo.py \
     --model_name_or_path path_to_your_model \
+    --template default \
     --finetuning_type lora \
     --checkpoint_dir path_to_checkpoint
 ```
@@ -337,6 +358,7 @@ python src/web_demo.py \
 ```bash
 python src/export_model.py \
     --model_name_or_path path_to_your_model \
+    --template default \
     --finetuning_type lora \
     --checkpoint_dir path_to_checkpoint \
     --output_dir path_to_export
@@ -358,8 +380,9 @@ python src/export_model.py \
 - [LLaMA-2](https://ai.meta.com/llama/license/)
 - [BLOOM](https://huggingface.co/spaces/bigscience/license)
 - [Falcon](LICENSE)
-- [baichuan](https://huggingface.co/baichuan-inc/baichuan-7B/resolve/main/baichuan-7B%20%E6%A8%A1%E5%9E%8B%E8%AE%B8%E5%8F%AF%E5%8D%8F%E8%AE%AE.pdf)
+- [Baichuan](https://huggingface.co/baichuan-inc/baichuan-7B/resolve/main/baichuan-7B%20%E6%A8%A1%E5%9E%8B%E8%AE%B8%E5%8F%AF%E5%8D%8F%E8%AE%AE.pdf)
 - [InternLM](https://github.com/InternLM/InternLM#open-source-license)
+- [Qwen](https://huggingface.co/Qwen/Qwen-7B-Chat/blob/main/LICENSE)
 
 ## 引用
 

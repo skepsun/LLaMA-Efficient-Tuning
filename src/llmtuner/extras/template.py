@@ -9,50 +9,82 @@ class Template:
     prompt: str
     sep: str
     use_history: bool
+    stop_words: List[str]
 
     def get_prompt(
-        self, query: str, history: Optional[List[Tuple[str, str]]] = None, prefix: Optional[str] = ""
+        self,
+        query: str,
+        history: Optional[List[Tuple[str, str]]] = None,
+        prefix: Optional[str] = "",
+        eos_token: Optional[str] = "</s>"
     ) -> str:
         r"""
         Returns a string containing prompt without response.
         """
-        return "".join(self._format_example(query, history, prefix))
+        return eos_token.join(map(lambda x: x[0] + x[1], self._format_example(query, history, prefix)))
 
     def get_dialog(
-        self, query: str, resp: str, history: Optional[List[Tuple[str, str]]] = None, prefix: Optional[str] = ""
-    ) -> List[str]:
+        self,
+        query: str,
+        resp: str,
+        history: Optional[List[Tuple[str, str]]] = None,
+        prefix: Optional[str] = ""
+    ) -> List[Tuple[str, str]]:
         r"""
-        Returns a list containing 2 * n elements where the 2k-th is a query and the (2k+1)-th is a response.
+        Returns a list containing prompt-response pairs.
         """
-        return self._format_example(query, history, prefix) + [resp]
+        result = self._format_example(query, history, prefix)
+        result[-1][-1] = resp
+        return result
 
     def _format_example(
-        self, query: str, history: Optional[List[Tuple[str, str]]] = None, prefix: Optional[str] = ""
-    ) -> List[str]:
+        self,
+        query: str,
+        history: Optional[List[Tuple[str, str]]] = None,
+        prefix: Optional[str] = ""
+    ) -> List[Tuple[str, str]]:
         prefix = prefix or self.prefix # use prefix if provided
         prefix = prefix + self.sep if prefix else "" # add separator for non-empty prefix
         history = history if (history and self.use_history) else []
-        history = history + [(query, "<dummy>")]
-        convs = []
-        for turn_idx, (user_query, bot_resp) in enumerate(history):
-            if turn_idx == 0:
-                convs.append(prefix + self.prompt.format(query=user_query))
-                convs.append(bot_resp)
-            else:
-                convs.append(self.sep + self.prompt.format(query=user_query))
-                convs.append(bot_resp)
-        return convs[:-1] # drop last
+        history = history + [(query, "")]
+        return [
+            [(self.sep if i else prefix) + self.prompt.format(query=q), r]
+            for i, (q, r) in enumerate(history)
+        ]
+
+
+@dataclass
+class Llama2Template(Template):
+
+    def _format_example(
+        self,
+        query: str,
+        history: Optional[List[Tuple[str, str]]] = None,
+        prefix: Optional[str] = ""
+    ) -> List[Tuple[str, str]]:
+        prefix = prefix or self.prefix # use prefix if provided
+        prefix = prefix if prefix.startswith("<<SYS>>") else "<<SYS>>\n{}\n<</SYS>>\n\n".format(prefix)
+        history = history if (history and self.use_history) else []
+        history = history + [(query, "")]
+        return [
+            [(self.sep if i else "") + self.prompt.format(query=(q if i else prefix + q)), r]
+            for i, (q, r) in enumerate(history)
+        ]
 
 
 templates: Dict[str, Template] = {}
 
 
-def register_template(name: str, prefix: str, prompt: str, sep: str, use_history: bool) -> None:
-    templates[name] = Template(
+def register_template(
+    name: str, prefix: str, prompt: str, sep: str, use_history: bool, stop_words: List[str]
+) -> None:
+    template_class = Llama2Template if name == "llama2" else Template
+    templates[name] = template_class(
         prefix=prefix,
         prompt=prompt,
         sep=sep,
-        use_history=use_history
+        use_history=use_history,
+        stop_words=stop_words
     )
 
 
@@ -70,7 +102,8 @@ register_template(
     prefix="",
     prompt="{query}",
     sep="",
-    use_history=False
+    use_history=False,
+    stop_words=[]
 )
 
 
@@ -83,7 +116,8 @@ register_template(
            "The assistant gives helpful, detailed, and polite answers to the user's questions.",
     prompt="Human: {query}\nAssistant: ",
     sep="\n",
-    use_history=True
+    use_history=True,
+    stop_words=[]
 )
 
 
@@ -102,9 +136,10 @@ register_template(
            "If a question does not make any sense, or is not factually coherent, "
            "explain why instead of answering something not correct. "
            "If you don't know the answer to a question, please don't share false information.\n<</SYS>>\n\n",
-    prompt=" [INST] {query} [/INST] ",
-    sep="</s>",
-    use_history=True
+    prompt="[INST] {query} [/INST] ",
+    sep="<s>",
+    use_history=True,
+    stop_words=[]
 )
 
 
@@ -118,7 +153,8 @@ register_template(
            "Write a response that appropriately completes the request.",
     prompt="### Instruction:\n{query}\n\n### Response:\n",
     sep="\n\n",
-    use_history=True
+    use_history=True,
+    stop_words=[]
 )
 
 
@@ -131,8 +167,9 @@ register_template(
     prefix="A chat between a curious user and an artificial intelligence assistant. "
            "The assistant gives helpful, detailed, and polite answers to the user's questions.",
     prompt="USER: {query} ASSISTANT: ",
-    sep="</s>",
-    use_history=True
+    sep="",
+    use_history=True,
+    stop_words=[]
 )
 
 
@@ -144,7 +181,8 @@ register_template(
     prefix="",
     prompt="Human: {query}\n\nBelle: ",
     sep="\n\n",
-    use_history=True
+    use_history=True,
+    stop_words=[]
 )
 
 
@@ -156,7 +194,8 @@ register_template(
     prefix="",
     prompt="User: {query}\nBot: ",
     sep="\n",
-    use_history=True
+    use_history=True,
+    stop_words=[]
 )
 
 
@@ -168,7 +207,8 @@ register_template(
     prefix="",
     prompt="Human: {query}\nAssistant: ",
     sep="\n",
-    use_history=True
+    use_history=True,
+    stop_words=[]
 )
 
 
@@ -180,7 +220,8 @@ register_template(
     prefix="",
     prompt="<human>:{query}\n<bot>:",
     sep="\n",
-    use_history=True
+    use_history=True,
+    stop_words=[]
 )
 
 
@@ -193,7 +234,8 @@ register_template(
            "The assistant gives helpful, detailed, and polite answers to the human's questions.",
     prompt="Human: {query}###Assistant: ",
     sep="###",
-    use_history=True
+    use_history=True,
+    stop_words=[]
 )
 
 
@@ -205,7 +247,8 @@ register_template(
     prefix="",
     prompt="<|User|>:{query}<eoh>\n<|Bot|>:",
     sep="<eoa>\n",
-    use_history=True
+    use_history=True,
+    stop_words=["<eoa>"]
 )
 
 
@@ -216,8 +259,9 @@ register_template(
     name="baichuan",
     prefix="",
     prompt="<reserved_102>{query}<reserved_103>",
-    sep="</s>",
-    use_history=True
+    sep="",
+    use_history=True,
+    stop_words=[]
 )
 
 
@@ -230,7 +274,21 @@ register_template(
     prefix="<|system|>\n",
     prompt="<|user|>\n{query}<|end|>\n<|assistant|>\n",
     sep="<|end|>\n",
-    use_history=True
+    use_history=True,
+    stop_words=["<|end|>"]
+)
+
+
+r"""
+Supports: https://huggingface.co/Qwen/Qwen-7B-Chat
+"""
+register_template(
+    name="chatml",
+    prefix="<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n",
+    prompt="<|im_start|>user\n{query}<|im_end|>\n<|im_start|>assistant\n",
+    sep="<|im_end|>\n",
+    use_history=True,
+    stop_words=["<|im_end|>"]
 )
 
 r"""

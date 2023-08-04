@@ -299,5 +299,6 @@ register_template(
     prefix="",
     prompt="GPT4 User: {query}<|end_of_turn|>GPT4 Assistant: ",
     sep="<|end_of_turn|>",
-    use_history=True
+    use_history=True,
+    stop_words=["<|end_of_turn|>"]
 )

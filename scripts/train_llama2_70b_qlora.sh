@@ -3,22 +3,26 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 accelerate launch --num_processes=7 src/train
     --deepspeed configs/ds_zero2.json \
     --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
     --template vicuna \
-    --model_name_or_path ../Qwen-7B \
+    --model_name_or_path ../Llama-2-70b-hf \
     --do_train \
     --dataset sharegpt_chinese_90k,524_legal,news \
-    --finetuning_type full \
+    --finetuning_type lora \
+    --quantization_bit 4 \
+    --lora_rank 64 \
+    --lora_alpha 16 \
+    --max_grad_norm 0.3 \
     --warmup_ratio 0.03 \
-    --output_dir outputs/qwen-7b-sft \
-    --per_device_train_batch_size 8 \
-    --gradient_accumulation_steps 8 \
-    --preprocessing_num_workers 1 \
+    --output_dir outputs/llama-2-70b-sft \
+    --per_device_train_batch_size 2 \
+    --gradient_accumulation_steps 16 \
+    --preprocessing_num_workers 16 \
     --lr_scheduler_type cosine \
     --evaluation_strategy steps \
     --eval_steps 100 \
     --logging_steps 1 \
     --save_steps 100 \
     --save_total_limit 3 \
-    --learning_rate 2e-5 \
+    --learning_rate 2e-4 \
     --dev_ratio 0.001 \
     --num_train_epochs 3 \
     --resume_lora_training True \

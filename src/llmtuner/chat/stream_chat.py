@@ -4,7 +4,7 @@ from typing import Any, Dict, Generator, List, Optional, Tuple
 from threading import Thread
 from transformers import PreTrainedModel, TextIteratorStreamer
 
-from llmtuner.extras.misc import dispatch_model, get_logits_processor, get_stopwords_criteria
+from llmtuner.extras.misc import dispatch_model, get_logits_processor, get_stopping_criteria
 from llmtuner.extras.template import get_template
 from llmtuner.tuner.core import get_infer_args, load_model_and_tokenizer
 
@@ -19,7 +19,7 @@ class ChatModel:
         self.source_prefix = data_args.source_prefix
         self.stop_ids = self.tokenizer.convert_tokens_to_ids(self.template.stop_words)
         self.tokenizer.add_special_tokens(dict(additional_special_tokens=self.template.stop_words))
-        self.model.generate = MethodType(PreTrainedModel.generate, self.model) # a monkey fix for qwen model
+        self.model.generate = MethodType(PreTrainedModel.generate, self.model) # disable custom method (for Qwen)
 
     def process_args(
         self,
@@ -30,10 +30,11 @@ class ChatModel:
     ) -> Tuple[Dict[str, Any], int]:
         prefix = prefix or self.source_prefix
 
-        prompt = self.template.get_prompt(query, history, prefix, self.tokenizer.eos_token)
-        inputs = self.tokenizer([prompt], return_tensors="pt")
-        inputs = inputs.to(self.model.device)
-        prompt_length = len(inputs["input_ids"][0])
+        prompt, _ = self.template.get_prompt(
+            tokenizer=self.tokenizer, query=query, resp="", history=history, prefix=prefix
+        )
+        input_ids = torch.tensor([prompt], device=self.model.device)
+        prompt_length = len(input_ids[0])
 
         do_sample = input_kwargs.pop("do_sample", None)
         temperature = input_kwargs.pop("temperature", None)
@@ -45,14 +46,14 @@ class ChatModel:
 
         gen_kwargs = self.generating_args.to_dict()
         gen_kwargs.update(dict(
-            input_ids=inputs["input_ids"],
+            input_ids=input_ids,
             do_sample=do_sample if do_sample is not None else gen_kwargs["do_sample"],
             temperature=temperature or gen_kwargs["temperature"],
             top_p=top_p or gen_kwargs["top_p"],
             top_k=top_k or gen_kwargs["top_k"],
             repetition_penalty=repetition_penalty or gen_kwargs["repetition_penalty"],
             logits_processor=get_logits_processor(),
-            stopping_criteria=get_stopwords_criteria(self.stop_ids)
+            stopping_criteria=get_stopping_criteria(self.stop_ids)
         ))
 
         if max_length:

@@ -295,7 +295,7 @@ r"""
 Supports: https://huggingface.co/qhduan/aquilachat-7b
 """
 register_template(
-    name="openchat_3.2",
+    name="openchat_v3.2",
     prefix="",
     prompt="GPT4 User: {query}<|end_of_turn|>GPT4 Assistant: ",
     sep="<|end_of_turn|>",

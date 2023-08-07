@@ -486,6 +486,24 @@
       "history": ""
     }
   },
+  "524_lvtu_legal": {
+    "file_name": "524qx-lvtu-yiju218shouce92kjudical5legal5+8+1.json",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": ""
+    }
+  },
+  "renzhi_2k": {
+    "file_name": "renzhi-2k.json",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": ""
+    }
+  },
   "sharegpt_chinese_90k":{
     "script_url": "sharegpt_chinese_90k",
     "columns": {
@@ -493,6 +511,51 @@
       "query": "",
       "response": "output",
       "history": "history"
+    }
+  },
+  "openchat_sharegpt":{
+    "script_url": "openchat_sharegpt",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
+  },
+  "cvalues_comparison":{
+    "script_url": "cvalues_comparison",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history"
+    }
+  },
+  "cvalues_sft":{
+    "file_name": "100PoinsonMpts.train.jsonl",
+    "columns": {
+      "prompt": "prompt",
+      "query": "",
+      "response": "answer",
+      "history": ""
+    }
+  },
+  "cvalues_comparison_sft":{
+    "file_name": "cvalues_comparison_sft.jsonl",
+    "columns": {
+      "prompt": "prompt",
+      "query": "",
+      "response": "pos_resp",
+      "history": ""
+    }
+  },
+  "cvalues_prompts":{
+    "file_name": "cvalues_responsibility_prompts.jsonl",
+    "columns": {
+      "prompt": "prompt",
+      "query": "",
+      "response": "",
+      "history": ""
     }
   }
 }

@@ -1,19 +1,20 @@
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 accelerate launch --num_processes=7 src/train_bash.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 deepspeed src/train_bash.py \
     --stage sft \
     --deepspeed configs/ds_zero2.json \
     --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
-    --template vicuna \
-    --model_name_or_path ../Qwen-7B \
+    --template alpaca \
+    --model_name_or_path ../chinese-llama-2-7b \
     --do_train \
-    --dataset sharegpt_chinese_90k,524_legal,news \
-    --finetuning_type full \
+    --dataset openchat_sharegpt,cvalues_sft,self_cognition \
+    --finetuning_type lora \
     --warmup_ratio 0.03 \
-    --output_dir outputs/qwen-7b-sft \
-    --per_device_train_batch_size 8 \
-    --gradient_accumulation_steps 8 \
-    --preprocessing_num_workers 1 \
+    --output_dir outputs/chinese-llama-2-7b-sft \
+    --per_device_train_batch_size 2 \
+    --gradient_accumulation_steps 2 \
+    --preprocessing_num_workers 12 \
     --lr_scheduler_type cosine \
     --evaluation_strategy steps \
+    --save_strategy epoch \
     --eval_steps 100 \
     --logging_steps 1 \
     --save_steps 100 \

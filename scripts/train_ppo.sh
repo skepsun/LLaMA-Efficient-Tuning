@@ -1,13 +1,13 @@
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node 8 src/train_ppo.py \
-    --model_name_or_path ../baichuan-llama-7b \
-    --checkpoint_dir baichuan-llama-7b-sft \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node 7 src/train_bash.py \
+    --stage ppo \
+    --model_name_or_path outputs/baichuan-7b-sft-v2/checkpoint-900 \
     --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
-    --prompt_template my_llm \
+    --template vicuna \
     --do_train \
-    --dataset oaast_sft_zh,oaast_sft \
+    --dataset cvalues_comparison_sft \
     --finetuning_type lora \
-    --reward_model baichuan-llama-7b-rm/checkpoint-200 \
-    --output_dir baichuan-llama-7b-ppo \
+    --reward_model outputs/baichuan-7b-rm/checkpoint-200 \
+    --output_dir outputs/baichuan-llama-7b-ppo \
     --max_target_length 512 \
     --per_device_train_batch_size 2 \
     --per_device_eval_batch_size 1 \
@@ -18,10 +18,8 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node 8 src/train_ppo.p
     --save_steps 100 \
     --report_to wandb \
     --eval_steps 10 \
-    --dev_ratio 0.001 \
-    --init_kl_coef 0.2 \
     --learning_rate 1e-5 \
-    --num_train_epochs 1 \
+    --num_train_epochs 10 \
     --resume_lora_training False \
     --fp16 \
     --plot_loss

@@ -68,10 +68,6 @@ def load_model_and_tokenizer(
         padding_side=model_args.padding_side,
         **config_kwargs
     )
-    if tokenizer.eos_token_id is None: # fix qwen tokenizer
-        tokenizer.eos_token = "<|endoftext|>"
-    if tokenizer.pad_token_id is None: # add pad token
-        tokenizer.pad_token = tokenizer.eos_token
 
     if model_args.checkpoint_dir is not None and finetuning_args.finetuning_type == "full":
         model_to_load = model_args.checkpoint_dir[0]
@@ -86,10 +82,7 @@ def load_model_and_tokenizer(
         if model_args.quantization_bit == 8:
             require_version("bitsandbytes>=0.37.0", "To fix: pip install bitsandbytes>=0.37.0")
             config_kwargs["load_in_8bit"] = True
-            config_kwargs["quantization_config"] = BitsAndBytesConfig(
-                load_in_8bit=True,
-                llm_int8_threshold=6.0
-            )
+            config_kwargs["quantization_config"] = BitsAndBytesConfig(load_in_8bit=True)
 
         elif model_args.quantization_bit == 4:
             require_version("bitsandbytes>=0.39.0", "To fix: pip install bitsandbytes>=0.39.0")

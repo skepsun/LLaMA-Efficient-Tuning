@@ -5,7 +5,7 @@ from threading import Thread
 from transformers import PreTrainedModel, TextIteratorStreamer
 
 from llmtuner.extras.misc import dispatch_model, get_logits_processor, get_stopping_criteria
-from llmtuner.extras.template import get_template
+from llmtuner.extras.template import get_template_and_fix_tokenizer
 from llmtuner.tuner.core import get_infer_args, load_model_and_tokenizer
 
 
@@ -15,10 +15,10 @@ class ChatModel:
         model_args, data_args, finetuning_args, self.generating_args = get_infer_args(args)
         self.model, self.tokenizer = load_model_and_tokenizer(model_args, finetuning_args)
         self.model = dispatch_model(self.model)
-        self.template = get_template(data_args.template)
+        self.model = self.model.eval() # change to eval mode
+        self.template = get_template_and_fix_tokenizer(data_args.template, self.tokenizer)
         self.source_prefix = data_args.source_prefix
         self.stop_ids = self.tokenizer.convert_tokens_to_ids(self.template.stop_words)
-        self.tokenizer.add_special_tokens(dict(additional_special_tokens=self.template.stop_words))
         self.model.generate = MethodType(PreTrainedModel.generate, self.model) # disable custom method (for Qwen)
 
     def process_args(
@@ -30,7 +30,7 @@ class ChatModel:
     ) -> Tuple[Dict[str, Any], int]:
         prefix = prefix or self.source_prefix
 
-        prompt, _ = self.template.get_prompt(
+        prompt, _ = self.template.encode_oneturn(
             tokenizer=self.tokenizer, query=query, resp="", history=history, prefix=prefix
         )
         input_ids = torch.tensor([prompt], device=self.model.device)

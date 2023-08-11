@@ -1,13 +1,13 @@
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node 7 src/train_bash.py \
     --stage rm \
-    --model_name_or_path outputs/baichuan-7b-sft-v2/checkpoint-900 \
+    --model_name_or_path ../baichuan-13b-sft \
     --lora_target W_pack,o_proj,gate_proj,up_proj,down_proj \
     --template vicuna \
     --do_train \
     --do_eval \
-    --dataset cvalues_comparison \
+    --dataset cvalues_comparison,oaast_rm_zh,comparison_gpt4_zh \
     --finetuning_type lora \
-    --output_dir outputs/baichuan-7b-rm \
+    --output_dir outputs/baichuan-13b-rm \
     --per_device_train_batch_size 8 \
     --per_device_eval_batch_size 1 \
     --gradient_accumulation_steps 8 \
@@ -19,7 +19,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node 7 src/train_bash.py
     --evaluation_strategy steps \
     --dev_ratio 0.01 \
     --learning_rate 2e-5 \
-    --num_train_epochs 3 \
+    --num_train_epochs 1 \
     --resume_lora_training False \
     --plot_loss \
     --fp16

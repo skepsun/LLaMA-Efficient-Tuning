@@ -465,13 +465,34 @@ register_template(
 )
 
 r"""
-Supports: https://huggingface.co/qhduan/aquilachat-7b
+openchat v3.2 template
 """
 register_template(
     name="openchat_v3.2",
     prefix="",
     prompt="GPT4 User: {query}<|end_of_turn|>GPT4 Assistant: ",
-    sep="<|end_of_turn|>",
+    sep=[
+        {"token": "<|end_of_turn|>"},
+        ],
     use_history=True,
     stop_words=["<|end_of_turn|>"]
+)
+
+r"""
+Deepspeed-chat template.
+"""
+register_template(
+    name="dschat",
+    prefix=[
+        ""
+    ],
+    prompt=[
+        "Human: {{query}} Assistant: "
+    ],
+    sep=[
+        {"token": "<|endoftext|>"},
+        "\n",
+        ],
+    stop_words=[],
+    use_history=True
 )

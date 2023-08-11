@@ -107,6 +107,7 @@ class PPOPeftTrainer(PPOTrainer, PeftTrainer):
 
             # Run PPO step
             stats = self.step(queries, responses, rewards)
+            # self.log_stats(stats, batch, rewards)
             loss_meter.update(stats["ppo/loss/total"], n=len(rewards))
             reward_meter.update(torch.stack(rewards).mean().item(), n=len(rewards))
 

@@ -111,6 +111,39 @@ def preprocess_dataset(
             model_inputs["accept_ids"].append(accept_ids)
             model_inputs["reject_ids"].append(reject_ids)
         return model_inputs
+    
+    def preprocess_dpo_dataset(examples):
+        # build input pairs with format `<bos> X Y1 <eos>` and `<bos> X Y2 <eos>`
+        model_inputs = {"chosen_input_ids": [], "chosen_attention_mask": [], "chosen_labels": [],
+                        "rejected_input_ids": [], "rejected_attention_mask": [], "rejected_labels": [],
+                        "prompt_input_ids": [], "prompt_attention_mask": [],}
+        max_length = data_args.max_source_length + data_args.max_target_length
+
+        for query, response, history, prefix in construct_example(examples):
+
+            for i, key in enumerate(["chosen", "rejected"]):
+                input_ids, labels = [], []
+                for source_ids, target_ids in template.get_dialog(tokenizer, query, response[i], history, prefix):
+                    if len(source_ids) > data_args.max_source_length:
+                        source_ids = source_ids[:data_args.max_source_length]
+                    if len(target_ids) > data_args.max_target_length:
+                        target_ids = target_ids[:data_args.max_target_length]
+
+                    if len(input_ids) + len(source_ids) + len(target_ids) > max_length:
+                        break
+                    assert tokenizer.eos_token_id not in source_ids
+
+                    input_ids += source_ids + target_ids 
+                    labels += [IGNORE_INDEX] * len(source_ids) + target_ids
+                if i == 0:
+                    model_inputs["prompt_input_ids"].append(input_ids[:-len(target_ids)])
+                    model_inputs["prompt_attention_mask"].append([1] * (len(input_ids)-len(target_ids)))
+                
+                model_inputs[f"{key}_input_ids"].append(input_ids)
+                model_inputs[f"{key}_attention_mask"].append([1] * len(input_ids))
+                model_inputs[f"{key}_labels"].append(labels)
+            
+        return model_inputs
 
     def print_supervised_dataset_example(example):
         print("input_ids:\n{}".format(example["input_ids"]))
@@ -126,6 +159,18 @@ def preprocess_dataset(
         print("accepts:\n{}".format(tokenizer.decode(example["accept_ids"], skip_special_tokens=False)))
         print("reject_ids:\n{}".format(example["reject_ids"]))
         print("rejects:\n{}".format(tokenizer.decode(example["reject_ids"], skip_special_tokens=False)))
+
+    def print_dpo_dataset_example(example):
+        for key in ["prompt", "chosen", "rejected"]:
+            print("{}_input_ids:\n{}".format(key, example[f"{key}_input_ids"]))
+            print("{}_inputs:\n{}".format(key, tokenizer.decode(example[f"{key}_input_ids"], skip_special_tokens=False)))
+            if key == "prompt": continue
+            print("{}_label_ids:\n{}".format(key, example[f"{key}_labels"]))
+            print("{}_labels:\n{}".format(
+                key,
+                tokenizer.decode([d if d != IGNORE_INDEX else tokenizer.pad_token_id for d in example[f"{key}_labels"]],
+                                skip_special_tokens=False)
+            ))
 
     def print_unsupervised_dataset_example(example):
         print("input_ids:\n{}".format(example["input_ids"]))
@@ -143,6 +188,10 @@ def preprocess_dataset(
         dataset = dataset.filter(lambda example: example["prompt"] and len(example["response"]) > 1)
         preprocess_function = preprocess_pairwise_dataset
         print_function = print_pairwise_dataset_example
+    elif stage == "dpo":
+        dataset = dataset.filter(lambda example: example["prompt"] and len(example["response"]) > 1)
+        preprocess_function = preprocess_dpo_dataset
+        print_function = print_dpo_dataset_example
     else:
         dataset = dataset.filter(lambda example: example["prompt"])
         preprocess_function = preprocess_unsupervised_dataset

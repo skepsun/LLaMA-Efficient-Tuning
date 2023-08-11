@@ -56,6 +56,11 @@ class FinetuningArguments:
                   Qwen choices: [\"c_attn\", \"c_proj\", \"w1\", \"w2\"]"}
     )
 
+    dpo_beta: Optional[float] = field(
+        default=0.1,
+        metadata={"help": "The important parameter used in DPO algorithm."}
+    )
+
     def __post_init__(self):
         if isinstance(self.lora_target, str): # support custom target modules/layers of LoRA
             self.lora_target = [target.strip() for target in self.lora_target.split(",")]

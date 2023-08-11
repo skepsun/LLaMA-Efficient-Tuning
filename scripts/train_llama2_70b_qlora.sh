@@ -5,7 +5,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 accelerate launch --num_processes=7 src/train
     --template vicuna \
     --model_name_or_path ../Llama-2-70b-hf \
     --do_train \
-    --dataset sharegpt_chinese_90k,524_legal,news \
+    --dataset openchat_sharegpt \
     --finetuning_type lora \
     --quantization_bit 4 \
     --lora_rank 64 \

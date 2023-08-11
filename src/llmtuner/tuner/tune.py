@@ -6,6 +6,7 @@ from llmtuner.tuner.pt import run_pt
 from llmtuner.tuner.sft import run_sft
 from llmtuner.tuner.rm import run_rm
 from llmtuner.tuner.ppo import run_ppo
+from llmtuner.tuner.dpo import run_dpo
 
 if TYPE_CHECKING:
     from transformers import TrainerCallback
@@ -23,6 +24,8 @@ def run_exp(args: Optional[Dict[str, Any]] = None, callbacks: Optional[List["Tra
         run_rm(model_args, data_args, training_args, finetuning_args, callbacks)
     elif general_args.stage == "ppo":
         run_ppo(model_args, data_args, training_args, finetuning_args, callbacks)
+    elif general_args.stage == "dpo":
+        run_dpo(model_args, data_args, training_args, finetuning_args, callbacks)
 
 
 def export_model(args: Optional[Dict[str, Any]] = None, max_shard_size: Optional[str] = "10GB"):

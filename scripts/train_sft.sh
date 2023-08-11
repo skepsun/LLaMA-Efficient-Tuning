@@ -1,16 +1,17 @@
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 deepspeed src/train_bash.py \
     --stage sft \
-    --deepspeed configs/ds_zero2.json \
+    --deepspeed configs/ds_zero3.json \
     --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
-    --template alpaca \
-    --model_name_or_path ../chinese-llama-2-7b \
+    --template vicuna \
+    --padding_side right \
+    --model_name_or_path ../baichuan-13b-sft \
     --do_train \
-    --dataset openchat_sharegpt,cvalues_sft,self_cognition \
-    --finetuning_type lora \
+    --dataset cvalues_sft,alpaca_gpt4_zh,oaast_sft_zh,openchat_sharegpt \
+    --finetuning_type full \
     --warmup_ratio 0.03 \
-    --output_dir outputs/chinese-llama-2-7b-sft \
+    --output_dir outputs/baichuan-13b-sft \
     --per_device_train_batch_size 2 \
-    --gradient_accumulation_steps 2 \
+    --gradient_accumulation_steps 1 \
     --preprocessing_num_workers 12 \
     --lr_scheduler_type cosine \
     --evaluation_strategy steps \

@@ -52,7 +52,7 @@ def load_model_and_tokenizer(
         logger.warning("Checkpoint is not found at evaluation, load the original model.")
         finetuning_args = FinetuningArguments(finetuning_type="none")
 
-    assert stage in ["pt", "sft"] or finetuning_args.finetuning_type == "lora", \
+    assert stage in ["pt", "sft", "dpo"] or finetuning_args.finetuning_type == "lora", \
         "RM and PPO training can only be performed with the LoRA method."
 
     config_kwargs = {

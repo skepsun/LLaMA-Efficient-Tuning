@@ -11,10 +11,10 @@
 \[ English | [中文](README_zh.md) \]
 
 ## What I modified?
-1. expand vocabulary support
+1. support expand vocabulary
 2. support separately datasets' size limitations
-3. my naive of dpo implementation from trl. I use multiturn dialogues in preprocessing.
-4. flash attention support (simply using monkey path from Fastchat)
+3. my naive dpo implementation from trl. I use multiturn dialogues in preprocessing.
+4. support flash attention (simply using monkey path from Fastchat)
 
 
 ## Changelog

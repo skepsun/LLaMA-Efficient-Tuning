@@ -10,6 +10,13 @@
 
 \[ English | [中文](README_zh.md) \]
 
+## What I modified?
+1. expand vocabulary support
+2. support separately datasets' size limitations
+3. my naive of dpo implementation from trl. I use multiturn dialogues in preprocessing.
+4. flash attention support (simply using monkey path from Fastchat)
+
+
 ## Changelog
 
 [23/08/12] Now we support **RoPE scaling** to extend the context length of the LLaMA models. Try `--rope_scaling linear` argument in training and `--rope_scaling dynamic` argument at inference to extrapolate the position embeddings.

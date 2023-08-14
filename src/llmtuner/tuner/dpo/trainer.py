@@ -8,19 +8,16 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union, Any, Literal
 
 from datasets import Dataset
-from transformers import TrainerState, TrainerControl, Trainer, DataCollator, PreTrainedModel, PreTrainedTokenizerBase, TrainingArguments
+from transformers import DataCollator, PreTrainedModel, PreTrainedTokenizerBase
 
 from trl import DPOTrainer
-from trl.core import LengthSampler
-from trl.trainer.utils import DPODataCollatorWithPadding, pad_to_length
+from trl.trainer.utils import pad_to_length
 
 from llmtuner.extras.logging import get_logger
-from llmtuner.extras.misc import AverageMeter, count_parameters, get_logits_processor
 from llmtuner.tuner.core.trainer import PeftTrainer
 
 if TYPE_CHECKING:
     from transformers import Seq2SeqTrainingArguments
-    from trl import AutoModelForCausalLMWithValueHead
     from llmtuner.extras.callbacks import LogCallback
     from llmtuner.hparams import FinetuningArguments
 
@@ -53,20 +50,11 @@ class DPOPeftTrainer(DPOTrainer, PeftTrainer):
         ),
         preprocess_logits_for_metrics: Optional[Callable[[torch.Tensor, torch.Tensor], torch.Tensor]] = None,
     ): 
-        # if not is_peft_available() and peft_config is not None:
-        #     raise ValueError(
-        #         "PEFT is not installed and you passed a `peft_config` in the trainer's kwargs, please install it to use the PEFT models"
-        #     )
-        # elif is_peft_available() and peft_config is not None:
-        #     if getattr(model, "is_loaded_in_8bit", False) or getattr(model, "is_loaded_in_4bit", False):
-        #         model = prepare_model_for_int8_training(model)
-        #     model = get_peft_model(model, peft_config)
         
         self.use_dpo_data_collator = False
         self.ref_model = None
         self.label_pad_token_id = label_pad_token_id
         self.padding_value = padding_value
-        # self.is_peft_model = getattr(model, "is_peft_model", False)
 
         self.beta = finetuning_args.dpo_beta
 
@@ -87,15 +75,6 @@ class DPOPeftTrainer(DPOTrainer, PeftTrainer):
             preprocess_logits_for_metrics=preprocess_logits_for_metrics,
         )
 
-        # If passed ref_model is not None, then we should set it to evaluation mode
-        # Since we inherit from trainer we always have access to an accelerator
-        # if hasattr(self, "accelerator"):
-        #     if self.ref_model is not None:
-        #         self.ref_model = self.accelerator.prepare_model(self.ref_model, evaluation_mode=True)
-        # else:
-        #     raise AttributeError(
-        #         "Your `Trainer` does not have an `accelerator` object. Consider upgrading `transformers`."
-        #     )
 
     def get_batch_samples(self, model, batch: Dict[str, torch.LongTensor]) -> Tuple[str, str]:
         """Generate samples from the model and reference model for the given batch of inputs."""
@@ -108,15 +87,6 @@ class DPOPeftTrainer(DPOTrainer, PeftTrainer):
             pad_token_id=self.tokenizer.pad_token_id,
         )
 
-        # if self.ref_model is not None:
-        #     reference_output = self.ref_model.generate(
-        #         batch["prompt_input_ids"],
-        #         attention_mask=batch["prompt_attention_mask"],
-        #         max_length=self.config.max_length,
-        #         do_sample=True,
-        #         pad_token_id=self.tokenizer.pad_token_id,
-        #     )
-        # elif self.is_peft_model:
         unwrapped_model = self.accelerator.unwrap_model(model)
         with unwrapped_model.disable_adapter():
             reference_output = unwrapped_model.generate(
@@ -126,12 +96,6 @@ class DPOPeftTrainer(DPOTrainer, PeftTrainer):
                 do_sample=True,
                 pad_token_id=self.tokenizer.pad_token_id,
             )
-        # else:
-        #     raise Exception("You should either use a lora model w/o a ref_model or a model with a complete ref_model")
-        # Cast to training mode
-        # self.ref_model.gradient_checkpointing_enable()
-        # self.ref_model.config.use_cache = False
-        
 
         policy_output = pad_to_length(policy_output, self.config.max_length, self.tokenizer.pad_token_id)
         policy_output_decoded = self.tokenizer.batch_decode(policy_output, skip_special_tokens=True)

@@ -5,7 +5,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node 7 src/train_bash.py
     --template vicuna \
     --do_train \
     --do_eval \
-    --dataset cvalues_comparison,comparison_gpt4_zh,oaast_rm_zh,oaast_rm,hh_rlhf_en \
+    --dataset cvalues_comparison \
     --finetuning_type lora \
     --lora_rank 8 \
     --lora_alpha 32 \
@@ -18,13 +18,13 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node 7 src/train_bash.py
     --lr_scheduler_type cosine \
     --weight_decay 0.05 \
     --save_total_limit 3 \
-    --logging_steps 100 \
-    --save_steps 1000 \
+    --logging_steps 10 \
+    --save_steps 500 \
     --report_to none \
     --eval_steps 10 \
     --warmup_steps 100 \
     --dev_ratio 0.01 \
-    --learning_rate 2e-5 \
+    --learning_rate 5e-4 \
     --max_grad_norm 10.0 \
     --num_train_epochs 1 \
     --resume_lora_training False \

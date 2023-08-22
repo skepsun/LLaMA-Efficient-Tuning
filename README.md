@@ -19,6 +19,8 @@
 
 ## Changelog
 
+[23/08/18] Now we support **resuming training**, upgrade `transformers` to `4.31.0` to enjoy this feature.
+
 [23/08/12] Now we support **RoPE scaling** to extend the context length of the LLaMA models. Try `--rope_scaling linear` argument in training and `--rope_scaling dynamic` argument at inference to extrapolate the position embeddings.
 
 [23/08/11] Now we support **[DPO training](https://arxiv.org/abs/2305.18290)** for instruction-tuned models. See [this example](#dpo-training) to train your models (experimental feature).
@@ -71,13 +73,13 @@
 
 ## Supported Training Approaches
 
-| Approach               | Full-parameter | Partial-parameter | LoRA | QLoRA |
-| ---------------------- | -------------- | ----------------- | ---- | ----- |
-| Pre-Training           | ✅            | ✅                | ✅   | ✅   |
-| Supervised Fine-Tuning | ✅            | ✅                | ✅   | ✅   |
-| Reward Modeling        |                |                   | ✅   | ✅   |
-| PPO Training           |                |                   | ✅   | ✅   |
-| DPO Training           | ✅            |                    | ✅   | ✅   |
+| Approach               |   Full-parameter   | Partial-parameter  |       LoRA         |       QLoRA        |
+| ---------------------- | ------------------ | ------------------ | ------------------ | ------------------ |
+| Pre-Training           | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Supervised Fine-Tuning | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Reward Modeling        |                    |                    | :white_check_mark: | :white_check_mark: |
+| PPO Training           |                    |                    | :white_check_mark: | :white_check_mark: |
+| DPO Training           | :white_check_mark: |                    | :white_check_mark: | :white_check_mark: |
 
 - Use `--quantization_bit 4/8` argument to enable QLoRA.
 
@@ -165,18 +167,23 @@ pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/downl
 CUDA_VISIBLE_DEVICES=0 python src/train_web.py
 ```
 
+We strongly recommend using the all-in-one Web UI for newcomers since it can also generate training scripts **automatically**.
+
 Currently the web UI only supports training on **a single GPU**.
 
-### Pre-Training
+### Train on a single GPU
+
+#### Pre-Training
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage pt \
-    --model_name_or_path path_to_your_model \
+    --model_name_or_path path_to_llama_model \
     --do_train \
     --dataset wiki_demo \
     --template default \
     --finetuning_type lora \
+    --lora_target q_proj,v_proj \
     --output_dir path_to_pt_checkpoint \
     --overwrite_cache \
     --per_device_train_batch_size 4 \
@@ -190,16 +197,17 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --fp16
 ```
 
-### Supervised Fine-Tuning
+#### Supervised Fine-Tuning
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage sft \
-    --model_name_or_path path_to_your_model \
+    --model_name_or_path path_to_llama_model \
     --do_train \
     --dataset alpaca_gpt4_en \
     --template default \
     --finetuning_type lora \
+    --lora_target q_proj,v_proj \
     --output_dir path_to_sft_checkpoint \
     --overwrite_cache \
     --per_device_train_batch_size 4 \
@@ -213,16 +221,17 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --fp16
 ```
 
-### Reward Modeling
+#### Reward Modeling
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage rm \
-    --model_name_or_path path_to_your_model \
+    --model_name_or_path path_to_llama_model \
     --do_train \
     --dataset comparison_gpt4_en \
     --template default \
     --finetuning_type lora \
+    --lora_target q_proj,v_proj \
     --resume_lora_training False \
     --checkpoint_dir path_to_sft_checkpoint \
     --output_dir path_to_rm_checkpoint \
@@ -231,22 +240,23 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --lr_scheduler_type cosine \
     --logging_steps 10 \
     --save_steps 1000 \
-    --learning_rate 1e-5 \
+    --learning_rate 1e-6 \
     --num_train_epochs 1.0 \
     --plot_loss \
     --fp16
 ```
 
-### PPO Training
+#### PPO Training
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage ppo \
-    --model_name_or_path path_to_your_model \
+    --model_name_or_path path_to_llama_model \
     --do_train \
     --dataset alpaca_gpt4_en \
     --template default \
     --finetuning_type lora \
+    --lora_target q_proj,v_proj \
     --resume_lora_training False \
     --checkpoint_dir path_to_sft_checkpoint \
     --reward_model path_to_rm_checkpoint \
@@ -258,19 +268,21 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --save_steps 1000 \
     --learning_rate 1e-5 \
     --num_train_epochs 1.0 \
-    --plot_loss
+    --plot_loss \
+    --fp16
 ```
 
-### DPO Training
+#### DPO Training
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage dpo \
-    --model_name_or_path path_to_your_model \
+    --model_name_or_path path_to_llama_model \
     --do_train \
     --dataset comparison_gpt4_en \
     --template default \
     --finetuning_type lora \
+    --lora_target q_proj,v_proj \
     --resume_lora_training False \
     --checkpoint_dir path_to_sft_checkpoint \
     --output_dir path_to_dpo_checkpoint \
@@ -360,12 +372,55 @@ deepspeed --num_gpus 8 --master_port=9901 src/train_bash.py \
 
 </details>
 
+### Export model
+
+```bash
+python src/export_model.py \
+    --model_name_or_path path_to_llama_model \
+    --template default \
+    --finetuning_type lora \
+    --checkpoint_dir path_to_checkpoint \
+    --output_dir path_to_export
+```
+
+### API Demo
+
+```bash
+python src/api_demo.py \
+    --model_name_or_path path_to_llama_model \
+    --template default \
+    --finetuning_type lora \
+    --checkpoint_dir path_to_checkpoint
+```
+
+Visit `http://localhost:8000/docs` for API documentation.
+
+### CLI Demo
+
+```bash
+python src/cli_demo.py \
+    --model_name_or_path path_to_llama_model \
+    --template default \
+    --finetuning_type lora \
+    --checkpoint_dir path_to_checkpoint
+```
+
+### Web Demo
+
+```bash
+python src/web_demo.py \
+    --model_name_or_path path_to_llama_model \
+    --template default \
+    --finetuning_type lora \
+    --checkpoint_dir path_to_checkpoint
+```
+
 ### Evaluation (BLEU and ROUGE_CHINESE)
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage sft \
-    --model_name_or_path path_to_your_model \
+    --model_name_or_path path_to_llama_model \
     --do_eval \
     --dataset alpaca_gpt4_en \
     --template default \
@@ -384,7 +439,7 @@ We recommend using `--per_device_eval_batch_size=1` and `--max_target_length 128
 ```bash
 CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --stage sft \
-    --model_name_or_path path_to_your_model \
+    --model_name_or_path path_to_llama_model \
     --do_predict \
     --dataset alpaca_gpt4_en \
     --template default \
@@ -394,49 +449,6 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --per_device_eval_batch_size 8 \
     --max_samples 100 \
     --predict_with_generate
-```
-
-### API Demo
-
-```bash
-python src/api_demo.py \
-    --model_name_or_path path_to_your_model \
-    --template default \
-    --finetuning_type lora \
-    --checkpoint_dir path_to_checkpoint
-```
-
-Visit `http://localhost:8000/docs` for API documentation.
-
-### CLI Demo
-
-```bash
-python src/cli_demo.py \
-    --model_name_or_path path_to_your_model \
-    --template default \
-    --finetuning_type lora \
-    --checkpoint_dir path_to_checkpoint
-```
-
-### Web Demo
-
-```bash
-python src/web_demo.py \
-    --model_name_or_path path_to_your_model \
-    --template default \
-    --finetuning_type lora \
-    --checkpoint_dir path_to_checkpoint
-```
-
-### Export model
-
-```bash
-python src/export_model.py \
-    --model_name_or_path path_to_your_model \
-    --template default \
-    --finetuning_type lora \
-    --checkpoint_dir path_to_checkpoint \
-    --output_dir path_to_export
 ```
 
 ## TODO

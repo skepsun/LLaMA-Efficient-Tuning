@@ -4,7 +4,7 @@ import gradio as gr
 
 from llmtuner.extras.constants import METHODS, SUPPORTED_MODELS
 from llmtuner.extras.template import templates
-from llmtuner.webui.common import list_checkpoint, get_model_path, save_config
+from llmtuner.webui.common import list_checkpoint, get_model_path, get_template, save_config
 from llmtuner.webui.utils import can_quantize
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ def create_top() -> Dict[str, "Component"]:
         with gr.Row():
             quantization_bit = gr.Dropdown(choices=["None", "8", "4"], value="None", scale=1)
             template = gr.Dropdown(choices=list(templates.keys()), value="default", scale=1)
-            source_prefix = gr.Textbox(scale=2)
+            system_prompt = gr.Textbox(scale=2)
 
     lang.change(save_config, [lang, model_name, model_path])
 
@@ -36,6 +36,8 @@ def create_top() -> Dict[str, "Component"]:
         list_checkpoint, [model_name, finetuning_type], [checkpoints]
     ).then(
         get_model_path, [model_name], [model_path]
+    ).then(
+        get_template, [model_name], [template]
     ) # do not save config since the below line will save
 
     model_path.change(save_config, [lang, model_name, model_path])
@@ -60,5 +62,5 @@ def create_top() -> Dict[str, "Component"]:
         advanced_tab=advanced_tab,
         quantization_bit=quantization_bit,
         template=template,
-        source_prefix=source_prefix
+        system_prompt=system_prompt
     )

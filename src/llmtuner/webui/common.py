@@ -6,7 +6,7 @@ import gradio as gr
 from peft.utils import WEIGHTS_NAME as PEFT_WEIGHTS_NAME
 from transformers.trainer import WEIGHTS_NAME, WEIGHTS_INDEX_NAME
 
-from llmtuner.extras.constants import SUPPORTED_MODELS
+from llmtuner.extras.constants import DEFAULT_TEMPLATE, SUPPORTED_MODELS
 
 
 DEFAULT_CACHE_DIR = "cache"
@@ -46,6 +46,12 @@ def save_config(lang: str, model_name: str, model_path: str) -> None:
 def get_model_path(model_name: str) -> str:
     user_config = load_config()
     return user_config["path_dict"].get(model_name, SUPPORTED_MODELS.get(model_name, ""))
+
+
+def get_template(model_name: str) -> str:
+    if model_name.endswith("Chat") and model_name.split("-")[0] in DEFAULT_TEMPLATE:
+        return DEFAULT_TEMPLATE[model_name.split("-")[0]]
+    return "default"
 
 
 def list_checkpoint(model_name: str, finetuning_type: str) -> Dict[str, Any]:

@@ -45,14 +45,14 @@ def create_eval_tab(top_elems: Dict[str, "Component"], runner: "Runner") -> Dict
     with gr.Box():
         output_box = gr.Markdown()
 
-    input_list = [
+    input_components = [
         top_elems["lang"],
         top_elems["model_name"],
         top_elems["checkpoints"],
         top_elems["finetuning_type"],
         top_elems["quantization_bit"],
         top_elems["template"],
-        top_elems["source_prefix"],
+        top_elems["system_prompt"],
         dataset_dir,
         dataset,
         max_source_length,
@@ -62,13 +62,13 @@ def create_eval_tab(top_elems: Dict[str, "Component"], runner: "Runner") -> Dict
         predict
     ]
 
-    output_list = [
+    output_components = [
         output_box,
         process_bar
     ]
 
-    cmd_preview_btn.click(runner.preview_eval, input_list, output_list)
-    start_btn.click(runner.run_eval, input_list, output_list)
+    cmd_preview_btn.click(runner.preview_eval, input_components, output_components)
+    start_btn.click(runner.run_eval, input_components, output_components)
     stop_btn.click(runner.set_abort, queue=False)
 
     return dict(

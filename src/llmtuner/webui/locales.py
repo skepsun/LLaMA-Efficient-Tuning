@@ -77,7 +77,7 @@ LOCALES = {
             "info": "构建提示词时使用的模板"
         }
     },
-    "source_prefix": {
+    "system_prompt": {
         "en": {
             "label": "System prompt (optional)",
             "info": "A sequence used as the default system prompt."
@@ -85,6 +85,16 @@ LOCALES = {
         "zh": {
             "label": "系统提示词（非必填）",
             "info": "默认使用的系统提示词"
+        }
+    },
+    "training_stage": {
+        "en": {
+            "label": "Stage",
+            "info": "The stage to perform in training."
+        },
+        "zh": {
+            "label": "训练阶段",
+            "info": "目前采用的训练方式。"
         }
     },
     "dataset_dir": {
@@ -343,16 +353,6 @@ LOCALES = {
             "label": "RLHF 参数设置"
         }
     },
-    "rlhf_method": {
-        "en": {
-            "label": "RLHF method",
-            "info": "The RLHF algorithm to adopt."
-        },
-        "zh": {
-            "label": "RLHF 方法",
-            "info": "RLHF 阶段使用的算法。"
-        }
-    },
     "dpo_beta": {
         "en": {
             "label": "DPO beta",
@@ -455,7 +455,7 @@ LOCALES = {
             "value": "模型未加载，请先加载模型。"
         }
     },
-    "prefix": {
+    "system": {
         "en": {
             "placeholder": "System prompt (optional)"
         },

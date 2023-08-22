@@ -10,6 +10,14 @@ LAYERNORM_NAMES = ["norm", "ln_f", "ln_attn", "ln_mlp"]
 
 METHODS = ["full", "freeze", "lora"]
 
+STAGES = [
+    "SFT",
+    "Reward Modeling",
+    "PPO",
+    "DPO",
+    "Pre-Training"
+]
+
 SUPPORTED_MODELS = {
     "LLaMA-7B": "huggyllama/llama-7b",
     "LLaMA-13B": "huggyllama/llama-13b",
@@ -21,6 +29,10 @@ SUPPORTED_MODELS = {
     "LLaMA2-7B-Chat": "meta-llama/Llama-2-7b-chat-hf",
     "LLaMA2-13B-Chat": "meta-llama/Llama-2-13b-chat-hf",
     "LLaMA2-70B-Chat": "meta-llama/Llama-2-70b-chat-hf",
+    "ChineseLLaMA2-7B": "ziqingyang/chinese-llama-2-7b",
+    "ChineseLLaMA2-13B": "ziqingyang/chinese-llama-2-13b",
+    "ChineseLLaMA2-7B-Chat": "ziqingyang/chinese-alpaca-2-7b",
+    "ChineseLLaMA2-13B-Chat": "ziqingyang/chinese-alpaca-2-13b",
     "BLOOM-560M": "bigscience/bloom-560m",
     "BLOOM-3B": "bigscience/bloom-3b",
     "BLOOM-7B1": "bigscience/bloom-7b1",
@@ -39,12 +51,13 @@ SUPPORTED_MODELS = {
     "Qwen-7B": "Qwen/Qwen-7B",
     "Qwen-7B-Chat": "Qwen/Qwen-7B-Chat",
     "XVERSE-13B": "xverse/XVERSE-13B",
-    "ChatGLM2-6B": "THUDM/chatglm2-6b"
+    "ChatGLM2-6B-Chat": "THUDM/chatglm2-6b"
 }
 
 DEFAULT_MODULE = {
     "LLaMA": "q_proj,v_proj",
     "LLaMA2": "q_proj,v_proj",
+    "ChineseLLaMA2": "q_proj,v_proj",
     "BLOOM": "query_key_value",
     "BLOOMZ": "query_key_value",
     "Falcon": "query_key_value",
@@ -53,4 +66,13 @@ DEFAULT_MODULE = {
     "Qwen": "c_attn",
     "XVERSE": "q_proj,v_proj",
     "ChatGLM2": "query_key_value"
+}
+
+DEFAULT_TEMPLATE = {
+    "LLaMA2": "llama2",
+    "ChineseLLaMA2": "llama2_zh",
+    "Baichuan": "baichuan",
+    "InternLM": "intern",
+    "Qwen": "chatml",
+    "ChatGLM2": "chatglm2"
 }

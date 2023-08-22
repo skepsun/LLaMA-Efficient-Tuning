@@ -28,3 +28,54 @@ def split_dataset(
             return {"train_dataset": dataset}
     else: # do_eval or do_predict
         return {"eval_dataset": dataset}
+
+
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+from datasets import Dataset
+def deduplicate(data):
+    device = "cuda"
+    # Function to combine instruction and input
+    def combine_instruction_input(data):
+        instructions = []
+        for d in data:
+            instruction = d['prompt']
+            # input_text = d['query']
+            if 'query' in d and d['query'] != '':
+                instruction += ' ' + d['query']
+            instruction += d['response']
+            instructions.append(instruction)
+        return instructions
+
+    # Extract instructions
+    new_instructions = combine_instruction_input(data)
+
+    # Initialize model
+    # model = SentenceTransformer('all-MiniLM-L6-v2', device=device)
+    model = SentenceTransformer('bge-large-zh', device=device)
+
+    # Compute embeddings
+    new_embeddings = model.encode(new_instructions)
+
+    # Initialize empty list
+    final_data = []
+    existing_embeddings = []
+
+    # For each new instruction, check if it's sufficiently different from existing instructions
+    for i, new_instruction in enumerate(new_instructions):
+        # If list is empty, add the first datapoint
+        if not final_data:
+            final_data.append(data[i])
+            existing_embeddings.append(new_embeddings[i])
+        else:
+            # Compute similarity scores with existing instructions
+            similarity_scores = cosine_similarity([new_embeddings[i]], existing_embeddings)
+
+            # If new instruction is sufficiently different, add it to the final_data
+            if np.max(similarity_scores) <= 0.9:
+                final_data.append(data[i])
+                existing_embeddings.append(new_embeddings[i])
+    final_data = Dataset.from_list(final_data)
+    print(f"original dataset size: {len(data)}, deduplicated dataset size: {len(final_data)}")
+    return final_data

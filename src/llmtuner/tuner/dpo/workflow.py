@@ -52,7 +52,7 @@ def run_dpo(
         dpo_trainer.save_state()
         dpo_trainer.save_model()
         if dpo_trainer.is_world_process_zero() and model_args.plot_loss:
-            plot_loss(training_args.output_dir, keys=["loss", "rewards/accuracies", "rewards/margins"])
+            plot_loss(training_args.output_dir, keys=["loss"])
 
     # Evaluation
     if training_args.do_eval:

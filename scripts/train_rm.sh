@@ -5,9 +5,9 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node 7 src/train_bash.py
     --template vicuna \
     --do_train \
     --do_eval \
-    --dataset cvalues_comparison,oaast_rm_zh,comparison_gpt4_zh \
+    --dataset news_comparison \
     --finetuning_type lora \
-    --output_dir outputs/baichuan-13b-rm \
+    --output_dir outputs/baichuan-13b-rm-news \
     --per_device_train_batch_size 8 \
     --per_device_eval_batch_size 1 \
     --gradient_accumulation_steps 8 \
@@ -17,9 +17,10 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node 7 src/train_bash.py
     --save_steps 100 \
     --eval_steps 10 \
     --evaluation_strategy steps \
-    --dev_ratio 0.01 \
+    --val_size 0.01 \
     --learning_rate 2e-5 \
     --num_train_epochs 1 \
     --resume_lora_training False \
+    --report_to none \
     --plot_loss \
     --fp16

@@ -125,7 +125,9 @@ def preprocess_dataset(
 
             for i, key in enumerate(["chosen", "rejected"]):
                 input_ids, labels = [], []
-                for source_ids, target_ids in template.encode_multiturn(tokenizer, query, response[i], history, prefix):
+                dialogues = template.encode_multiturn(tokenizer, query, response[i], history, prefix)
+                num_turn = len(dialogues)
+                for turn_id, (source_ids, target_ids) in enumerate(dialogues):
                     if len(source_ids) > data_args.max_source_length:
                         source_ids = source_ids[:data_args.max_source_length]
                     if len(target_ids) > data_args.max_target_length:
@@ -136,7 +138,12 @@ def preprocess_dataset(
                     assert tokenizer.eos_token_id not in source_ids
 
                     input_ids += source_ids + target_ids 
+                    # try: maybe we should only predict the last response and mask other responses.
+                    # if turn_id < num_turn - 1:
+                    #     labels += [IGNORE_INDEX] * (len(source_ids) + len(target_ids))
+                    # else:
                     labels += [IGNORE_INDEX] * len(source_ids) + target_ids
+                # labels = labels[:-len(target_ids)] + target_ids
                 if i == 0:
                     model_inputs["prompt_input_ids"].append(input_ids[:-len(target_ids)])
                     model_inputs["prompt_attention_mask"].append([1] * (len(input_ids)-len(target_ids)))

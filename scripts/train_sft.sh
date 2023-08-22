@@ -1,30 +1,28 @@
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 deepspeed src/train_bash.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node=7 src/train_bash.py \
     --stage sft \
-    --deepspeed configs/ds_zero3.json \
-    --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
+    --lora_target c_attn,attn.c_proj,w1,w2,mlp.c_proj  \
     --template vicuna \
-    --padding_side right \
-    --model_name_or_path ../baichuan-13b-sft \
+    --model_name_or_path ../Qwen-7B \
     --do_train \
-    --dataset cvalues_sft,alpaca_gpt4_zh,oaast_sft_zh,openchat_sharegpt \
+    --dataset cvalues_comparison_sft_filtered \
     --finetuning_type full \
     --warmup_ratio 0.03 \
-    --output_dir outputs/baichuan-13b-sft \
-    --per_device_train_batch_size 2 \
-    --gradient_accumulation_steps 1 \
-    --preprocessing_num_workers 12 \
+    --output_dir outputs/qwen-7b-sft-platypus-cvalues\
+    --per_device_train_batch_size 4 \
+    --gradient_accumulation_steps 8 \
+    --preprocessing_num_workers 1 \
     --lr_scheduler_type cosine \
     --evaluation_strategy steps \
-    --save_strategy epoch \
+    --overwrite_cache \
+    --save_strategy steps \
     --eval_steps 100 \
     --logging_steps 1 \
     --save_steps 100 \
     --save_total_limit 3 \
     --learning_rate 2e-5 \
-    --dev_ratio 0.001 \
+    --val_size 0.001 \
     --num_train_epochs 3 \
     --resume_lora_training True \
     --plot_loss \
-    --report_to wandb \
-    --fp16 \
-    --tf32 True
+    --report_to none \
+    --fp16 

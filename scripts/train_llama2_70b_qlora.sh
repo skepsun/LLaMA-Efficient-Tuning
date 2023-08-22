@@ -3,16 +3,16 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 accelerate launch --num_processes=7 src/train
     --deepspeed configs/ds_zero2.json \
     --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
     --template vicuna \
-    --model_name_or_path ../Llama-2-70b-hf \
+    --model_name_or_path ../llama2-70b-sft \
     --do_train \
-    --dataset openchat_sharegpt \
+    --dataset platypus,evol_sharegpt_chinese \
     --finetuning_type lora \
     --quantization_bit 4 \
     --lora_rank 64 \
     --lora_alpha 16 \
     --max_grad_norm 0.3 \
     --warmup_ratio 0.03 \
-    --output_dir outputs/llama-2-70b-sft \
+    --output_dir outputs/llama-2-70b-sft-v2 \
     --per_device_train_batch_size 2 \
     --gradient_accumulation_steps 16 \
     --preprocessing_num_workers 16 \
@@ -23,10 +23,10 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 accelerate launch --num_processes=7 src/train
     --save_steps 100 \
     --save_total_limit 3 \
     --learning_rate 2e-4 \
-    --dev_ratio 0.001 \
+    --val_size 0.001 \
     --num_train_epochs 3 \
     --resume_lora_training True \
     --plot_loss \
-    --report_to wandb \
+    --report_to none \
     --fp16 \
     --tf32 True

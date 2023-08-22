@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, List, Optional
 from datasets import Value, concatenate_datasets, interleave_datasets, load_dataset
 
 from llmtuner.extras.logging import get_logger
+from llmtuner.dsets.utils import deduplicate
 
 if TYPE_CHECKING:
     from datasets import Dataset
@@ -109,11 +110,14 @@ def get_dataset(
         all_datasets.append(dataset)
 
     if len(data_args.dataset_list) == 1:
+        all_datasets[0] = deduplicate(all_datasets[0])
         return all_datasets[0]
     elif data_args.mix_strategy == "concat":
         if data_args.streaming:
             logger.warning("The samples between different datasets will not be mixed in streaming mode.")
-        return concatenate_datasets(all_datasets)
+        concat_dataset = concatenate_datasets(all_datasets)
+        concat_dataset = deduplicate(concat_dataset)
+        return concat_dataset # type: ignore
     elif data_args.mix_strategy.startswith("interleave"):
         if not data_args.streaming:
             logger.warning("We recommend using `mix_strategy=concat` in non-streaming mode.")

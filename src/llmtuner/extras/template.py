@@ -522,12 +522,10 @@ openchat v3.2 template
 register_template(
     name="openchat_v3.2",
     prefix="",
-    prompt="GPT4 User: {query}<|end_of_turn|>GPT4 Assistant: ",
-    sep=[
-        {"token": "<|end_of_turn|>"},
-        ],
+    prompt="GPT4 User: {{query}}<|end_of_turn|>GPT4 Assistant:",
+    sep=["<|end_of_turn|>"],
     use_history=True,
-    stop_words=["<|end_of_turn|>"]
+    stop_words=[]
 )
 
 r"""

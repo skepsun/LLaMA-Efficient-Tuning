@@ -21,7 +21,8 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "self_cognition": {
@@ -35,7 +36,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "oaast_sft_zh": {
@@ -45,7 +47,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "sharegpt_zh": {
@@ -55,7 +58,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "lima": {
@@ -65,7 +69,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "medical": {
@@ -74,7 +79,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "example": {
@@ -83,7 +89,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "guanaco": {
@@ -110,7 +117,8 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "chinese_guanaco": {
@@ -119,7 +127,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "firefly": {
@@ -128,7 +137,8 @@
       "prompt": "input",
       "query": "",
       "response": "target",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "codealpaca": {
@@ -164,7 +174,8 @@
       "prompt": "INSTRUCTION",
       "query": "",
       "response": "RESPONSE",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "alpaca_cleaned":{
@@ -173,7 +184,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "hisotry": ""
+      "hisotry": "",
+      "prefix": ""
     }
   },
   "alpaca_evol_instruct_cleaned":{
@@ -182,7 +194,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "hisotry": ""
+      "hisotry": "",
+      "prefix": ""
     }
   },
   "ziya_ft_small":{
@@ -191,7 +204,8 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "webqa": {
@@ -200,7 +214,8 @@
       "prompt": "input",
       "query": "",
       "response": "output",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "ultra_chat": {
@@ -209,7 +224,8 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "novel_tokens512_50k": {
@@ -229,7 +245,8 @@
       "prompt": "question",
       "query": "",
       "response": "answer",
-      "hisotry": ""
+      "hisotry": "",
+      "prefix": ""
     }
   },
   "crimekg_assistant_92k": {
@@ -238,7 +255,8 @@
       "prompt": "question",
       "query": "",
       "response": "answer",
-      "hisotry": ""
+      "hisotry": "",
+      "prefix": ""
     }
   },
   "moss_belle_law_rm": {
@@ -253,7 +271,8 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "moss_and_ultrachat": {
@@ -262,7 +281,8 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "hh_rlhf_en": {
@@ -271,7 +291,8 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "anima_belle_rlhf": {
@@ -280,7 +301,8 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "oaast_rm": {
@@ -290,7 +312,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "oaast_rm_zh": {
@@ -300,7 +323,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "hh_rlhf_sft_en": {
@@ -309,7 +333,8 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "oasst_dolly_hhrlhf": {
@@ -318,7 +343,8 @@
       "prompt": "instruction",
       "query": "",
       "response": "response",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "flores": {
@@ -327,7 +353,8 @@
       "prompt": "sentence",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "wiki_demo": {
@@ -337,7 +364,8 @@
       "prompt": "text",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "all_cn_laws": {
@@ -346,7 +374,8 @@
       "prompt": "",
       "query": "",
       "response": "text",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "wikitext": {
@@ -355,7 +384,8 @@
       "prompt": "text",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "linly_pretrain": {
@@ -364,7 +394,8 @@
       "prompt": "text",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "enwiki_100k": {
@@ -373,7 +404,8 @@
       "prompt": "text",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "wudao": {
@@ -382,7 +414,8 @@
       "prompt": "content",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "refinedweb": {
@@ -391,7 +424,8 @@
       "prompt": "content",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "small_pile": {
@@ -400,7 +434,8 @@
       "prompt": "text",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "starcoder": {
@@ -409,7 +444,8 @@
       "prompt": "content",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "collected_chinese": {
@@ -418,7 +454,8 @@
       "prompt": "text",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "wikipedia_en": {
@@ -427,7 +464,8 @@
       "prompt": "text",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "redpajama_sample": {
@@ -436,7 +474,8 @@
       "prompt": "text",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "wikipedia_zh": {
@@ -445,7 +484,8 @@
       "prompt": "completion",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "news": {
@@ -454,7 +494,18 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": ""
+      "history": "",
+      "prefix": ""
+    }
+  },
+  "news_ext": {
+    "file_name": "ext_only.jsonl",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": "",
+      "prefix": ""
     }
   },
   "524_legal": {
@@ -463,7 +514,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "524_lvtu_legal": {
@@ -472,7 +524,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "renzhi_2k": {
@@ -481,7 +534,8 @@
       "prompt": "instruction",
       "query": "input",
       "response": "output",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "sharegpt_chinese_90k":{
@@ -490,7 +544,18 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
+    }
+  },
+  "evol_sharegpt_chinese":{
+    "script_url": "evol_sharegpt_chinese",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history",
+      "prefix": ""
     }
   },
   "openchat_sharegpt":{
@@ -499,7 +564,18 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
+    }
+  },
+  "puffin":{
+    "script_url": "puffin",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history",
+      "prefix": ""
     }
   },
   "cvalues_comparison":{
@@ -508,7 +584,8 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
-      "history": "history"
+      "history": "history",
+      "prefix": ""
     }
   },
   "cvalues_sft":{
@@ -517,7 +594,8 @@
       "prompt": "prompt",
       "query": "",
       "response": "answer",
-      "history": ""
+      "history": "",
+      "prefix": ""
     }
   },
   "cvalues_comparison_sft":{
@@ -526,7 +604,18 @@
       "prompt": "prompt",
       "query": "",
       "response": "pos_resp",
-      "history": ""
+      "history": "",
+      "prefix": ""
+    }
+  },
+  "cvalues_comparison_sft_filtered":{
+    "file_name": "cvalues_comparison_sft_filtered.json",
+    "columns": {
+      "prompt": "prompt",
+      "query": "",
+      "response": "pos_resp",
+      "history": "",
+      "prefix": ""
     }
   },
   "cvalues_prompts":{
@@ -535,7 +624,48 @@
       "prompt": "prompt",
       "query": "",
       "response": "",
-      "history": ""
+      "history": "",
+      "prefix": ""
+    }
+  },
+  "platypus":{
+    "hf_hub_url": "garage-bAInd/Open-Platypus",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "hisotry": "",
+      "prefix": ""
+    }
+  },
+  "evol_codealpaca":{
+    "hf_hub_url": "theblackcat102/evol-codealpaca-v1",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "hisotry": "",
+      "prefix": ""
+    }
+  },
+  "openorca":{
+    "script_url": "/data/chuxiong/OpenOrca",
+    "columns": {
+      "prompt": "question",
+      "query": "",
+      "response": "response",
+      "hisotry": "",
+      "prefix": "system_prompt"
+    }
+  },
+  "news_comparison":{
+    "script_url": "news_comparison",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "",
+      "prefix": ""
     }
   }
 }

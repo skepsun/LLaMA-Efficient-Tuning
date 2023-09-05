@@ -5,6 +5,7 @@ import datasets
 import transformers
 from typing import Any, Dict, Optional, Tuple
 from transformers import HfArgumentParser, Seq2SeqTrainingArguments
+from transformers.utils.versions import require_version
 from transformers.trainer_utils import get_last_checkpoint
 
 from llmtuner.extras.logging import get_logger
@@ -110,6 +111,11 @@ def get_train_args(
     if general_args.stage in ["ppo", "dpo"] and not training_args.do_train:
         raise ValueError("PPO and DPO stages can only be performed at training.")
 
+    if general_args.stage in ["rm", "dpo"]:
+        for dataset_attr in data_args.dataset_list:
+            if not dataset_attr.ranking:
+                raise ValueError("Please use ranked datasets for reward modeling or DPO training.")
+
     if general_args.stage == "ppo" and model_args.reward_model is None:
         raise ValueError("Reward model is necessary for PPO training.")
 
@@ -156,10 +162,9 @@ def get_train_args(
         and finetuning_args.finetuning_type == "lora"
     ):
         logger.warning("`ddp_find_unused_parameters` needs to be set as False for LoRA in DDP training.")
-        training_args.ddp_find_unused_parameters = False
-
-    if training_args.optim == "adamw_hf":
-        training_args.optim = "adamw_torch" # suppress warning
+        training_args_dict = training_args.to_dict()
+        training_args_dict.update(dict(ddp_find_unused_parameters=False))
+        training_args = Seq2SeqTrainingArguments(**training_args_dict)
 
     if (
         training_args.resume_from_checkpoint is None
@@ -167,12 +172,15 @@ def get_train_args(
         and os.path.isdir(training_args.output_dir)
         and not training_args.overwrite_output_dir
     ):
+        require_version("transformers>=4.31.0", "Resuming training requires transformers>=4.31.0.")
         last_checkpoint = get_last_checkpoint(training_args.output_dir)
         if last_checkpoint is None and len(os.listdir(training_args.output_dir)) > 0:
             raise ValueError("Output directory already exists and is not empty. Use `overwrite_output_dir`.")
 
         if last_checkpoint is not None:
-            training_args.resume_from_checkpoint = last_checkpoint
+            training_args_dict = training_args.to_dict()
+            training_args_dict.update(dict(resume_from_checkpoint=last_checkpoint))
+            training_args = Seq2SeqTrainingArguments(**training_args_dict)
             logger.info(
                 "Resuming from checkpoint. Change `output_dir` or use `overwrite_output_dir` to avoid."
             )

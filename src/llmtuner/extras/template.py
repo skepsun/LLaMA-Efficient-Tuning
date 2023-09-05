@@ -137,6 +137,8 @@ class Template:
         token_ids = []
         for elem in context:
             if isinstance(elem, str):
+                if len(elem) == 0:
+                    continue
                 elem = elem.replace("{{system}}", system, 1) if system is not None else elem
                 elem = elem.replace("{{query}}", query, 1) if query is not None else elem
                 elem = elem.replace("{{idx}}", idx, 1) if idx is not None else elem
@@ -285,7 +287,7 @@ register_template(
         "Always answer as helpfully as possible, while being safe.  "
         "Your answers should not include any harmful, unethical, "
         "racist, sexist, toxic, dangerous, or illegal content. "
-        "Please ensure that your responses are socially unbiased and positive in nature.\n"
+        "Please ensure that your responses are socially unbiased and positive in nature.\n\n"
         "If a question does not make any sense, or is not factually coherent, "
         "explain why instead of answering something not correct. "
         "If you don't know the answer to a question, please don't share false information."
@@ -645,4 +647,19 @@ register_template(
     sep=[
         "\n"
     ]
+)
+
+r"""
+Supports: https://huggingface.co/xverse/XVERSE-13B-Chat
+"""
+register_template(
+    name="xverse",
+    prefix=[
+        "{{system}}"
+    ],
+    prompt=[
+        "Human: {{query}}\n\nAssistant: "
+    ],
+    system="",
+    sep=[]
 )

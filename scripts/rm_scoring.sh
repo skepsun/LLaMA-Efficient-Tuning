@@ -1,0 +1,14 @@
+CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
+    --stage rm \
+    --template vanilla \
+    --model_name_or_path ../openchat/outputs/chinese-llama-2-7b-openchat/ep_4 \
+    --checkpoint_dir outputs/chinese-llama-2-7b-openchat-rm/checkpoint-300 \
+    --output_dir outputs/generated_responses_scores \
+    --do_predict \
+    --dataset local_generations \
+    --per_device_eval_batch_size 1 \
+    --preprocessing_num_workers 12 \
+    --max_source_length 512 \
+    --max_target_length 512 \
+    --bf16 \
+    --tf32 True

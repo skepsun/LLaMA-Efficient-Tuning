@@ -241,13 +241,24 @@
   "novel_tokens512_50k": {
     "hf_hub_url": "zxbsmk/webnovel_cn"
   },
+  "adgen": {
+    "hf_hub_url": "HasturOfficial/adgen",
+    "columns": {
+      "prompt": "content",
+      "query": "",
+      "response": "summary",
+      "history": ""
+    }
+  },
   "comparison_gpt4_en": {
     "file_name": "comparison_gpt4_data_en.json",
-    "file_sha1": "96fa18313544e22444fe20eead7754b17da452ae"
+    "file_sha1": "96fa18313544e22444fe20eead7754b17da452ae",
+    "ranking": true
   },
   "comparison_gpt4_zh": {
     "file_name": "comparison_gpt4_data_zh.json",
-    "file_sha1": "515b18ed497199131ddcc1af950345c11dc5c7fd"
+    "file_sha1": "515b18ed497199131ddcc1af950345c11dc5c7fd",
+    "ranking": true
   },
   "crimekg_assistant_52k": {
     "file_name": "crimekg_assistant_52k.json",
@@ -270,10 +281,12 @@
     }
   },
   "moss_belle_law_rm": {
-    "file_name": "moss_belle_law_rm.json"
+    "file_name": "moss_belle_law_rm.json",
+    "ranking": true
   },
   "sharegpt_rm": {
-    "file_name": "sharegpt_rm_cleaned.json"
+    "file_name": "sharegpt_rm_cleaned.json",
+    "ranking": true
   },
   "sharegpt": {
     "script_url": "sharegpt",
@@ -333,7 +346,8 @@
       "response": "output",
       "history": "history",
       "prefix": ""
-    }
+    },
+    "ranking": true
   },
   "oaast_rm": {
     "file_name": "oaast_rm.json",
@@ -344,7 +358,8 @@
       "response": "output",
       "history": "history",
       "prefix": ""
-    }
+    },
+    "ranking": true
   },
   "oaast_rm_zh": {
     "file_name": "oaast_rm_zh.json",
@@ -355,7 +370,8 @@
       "response": "output",
       "history": "history",
       "prefix": ""
-    }
+    },
+    "ranking": true
   },
   "hh_rlhf_sft_en": {
     "script_url": "hh_rlhf_sft_en",
@@ -385,7 +401,8 @@
       "response": "",
       "history": "",
       "prefix": ""
-    }
+    },
+    "ranking": true
   },
   "wiki_demo": {
     "file_name": "wiki_demo.txt",
@@ -706,7 +723,7 @@
       "response": "output",
       "history": ""
     },
-    "stage": "rm"
+    "ranking": true
   },
   "news_sft": {
     "script_url": "news_sft",
@@ -715,8 +732,7 @@
       "query": "input",
       "response": "output",
       "history": ""
-    },
-    "stage": "sft"
+    }
   },
   "lawyer_llama_data": {
     "file_name": "lawyer_llama_data/all.json",
@@ -746,6 +762,15 @@
       "response": "predict",
       "history": "",
       "prefix": ""
+    }
+  },
+  "the_stack": {
+    "hf_hub_url": "bigcode/the-stack",
+    "columns": {
+      "prompt": "content",
+      "query": "",
+      "response": "",
+      "history": ""
     }
   }
 }

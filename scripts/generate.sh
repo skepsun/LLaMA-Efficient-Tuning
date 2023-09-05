@@ -1,0 +1,20 @@
+CUDA_VISIBLE_DEVICES=0,1,2,3,4 torchrun --nproc_per_node 5 src/train_bash.py \
+    --stage sft \
+    --template vicuna \
+    --model_name_or_path outputs/baichuan-7b-sft \
+    --output_dir outputs/generated_responses \
+    --do_predict \
+    --predict_with_generate \
+    --do_sample False \
+    --dataset news_sft \
+    --per_device_eval_batch_size 4 \
+    --preprocessing_num_workers 12 \
+    --max_source_length 512 \
+    --overwrite_output_dir \
+    --max_target_length 512 \
+    --num_beams 4 \
+    --num_beam_groups 4 \
+    --diversity_penalty 1.0 \
+    --num_return_sequences 4 \
+    --bf16 \
+    --tf32 True

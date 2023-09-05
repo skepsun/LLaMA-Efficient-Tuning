@@ -1,28 +1,37 @@
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node=7 src/train_bash.py \
     --stage sft \
-    --lora_target c_attn,attn.c_proj,w1,w2,mlp.c_proj  \
-    --template vicuna \
-    --model_name_or_path ../Qwen-7B \
+    --deepspeed configs/ds_zero2.json \
+    --lora_target q_proj,v_proj \
+    --template openchat_v3.2 \
+    --model_name_or_path ../openchat/outputs/chinese-llama-2-7b-openchat/ep_4 \
     --do_train \
-    --dataset cvalues_comparison_sft_filtered \
+    --dataset openchat_sharegpt,lawyer_llama_data \
+    --deduplicate True \
+    --similarity_threshold 0.8 \
     --finetuning_type full \
+    --lora_rank 8 \
+    --lora_alpha 32 \
+    --lora_dropout 0.05 \
     --warmup_ratio 0.03 \
-    --output_dir outputs/qwen-7b-sft-platypus-cvalues\
-    --per_device_train_batch_size 4 \
+    --output_dir outputs/chinese-llama-2-7b-sft-openchat-law \
+    --per_device_train_batch_size 8 \
     --gradient_accumulation_steps 8 \
-    --preprocessing_num_workers 1 \
+    --preprocessing_num_workers 12 \
     --lr_scheduler_type cosine \
     --evaluation_strategy steps \
-    --overwrite_cache \
     --save_strategy steps \
+    --max_source_length 512 \
+    --max_target_length 512 \
     --eval_steps 100 \
     --logging_steps 1 \
     --save_steps 100 \
     --save_total_limit 3 \
-    --learning_rate 2e-5 \
+    --learning_rate 5e-5 \
     --val_size 0.001 \
     --num_train_epochs 3 \
-    --resume_lora_training True \
+    --resume_lora_training False \
+    --overwrite_output_dir \
     --plot_loss \
     --report_to none \
-    --fp16 
+    --bf16 \
+    --tf32 True

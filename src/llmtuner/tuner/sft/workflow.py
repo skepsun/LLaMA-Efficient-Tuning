@@ -1,7 +1,7 @@
 # Inspired by: https://github.com/huggingface/transformers/blob/v4.29.2/examples/pytorch/summarization/run_summarization.py
 
 from typing import TYPE_CHECKING, Optional, List
-from transformers import DataCollatorForSeq2Seq
+from transformers import DataCollatorForSeq2Seq, Seq2SeqTrainingArguments
 
 from llmtuner.dsets import get_dataset, preprocess_dataset, split_dataset
 from llmtuner.extras.constants import IGNORE_INDEX
@@ -12,7 +12,7 @@ from llmtuner.tuner.sft.metric import ComputeMetrics
 from llmtuner.tuner.sft.trainer import Seq2SeqPeftTrainer
 
 if TYPE_CHECKING:
-    from transformers import Seq2SeqTrainingArguments, TrainerCallback
+    from transformers import TrainerCallback
     from llmtuner.hparams import ModelArguments, DataArguments, FinetuningArguments, GeneratingArguments
 
 
@@ -33,10 +33,12 @@ def run_sft(
     )
 
     # Override the decoding parameters of Seq2SeqTrainer
-    training_args.generation_max_length = training_args.generation_max_length if \
-                training_args.generation_max_length is not None else data_args.max_target_length
-    training_args.generation_num_beams = data_args.eval_num_beams if \
-                data_args.eval_num_beams is not None else training_args.generation_num_beams
+    training_args_dict = training_args.to_dict()
+    training_args_dict.update(dict(
+        generation_max_length=training_args.generation_max_length or data_args.max_target_length,
+        generation_num_beams=data_args.eval_num_beams or training_args.generation_num_beams
+    ))
+    training_args = Seq2SeqTrainingArguments(**training_args_dict)
 
     # Initialize our Trainer
     trainer = Seq2SeqPeftTrainer(

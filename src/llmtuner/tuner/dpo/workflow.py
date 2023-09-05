@@ -15,7 +15,7 @@ from llmtuner.tuner.dpo.trainer import DPOPeftTrainer
 from llmtuner.tuner.dpo.collator import DPODataCollatorWithPadding
 
 if TYPE_CHECKING:
-    from transformers import Seq2SeqTrainingArguments, TrainerCallback
+    from transformers import TrainerCallback
     from llmtuner.hparams import ModelArguments, DataArguments, FinetuningArguments
 
 

@@ -10,13 +10,13 @@ LAYERNORM_NAMES = ["norm", "ln_f", "ln_attn", "ln_mlp"]
 
 METHODS = ["full", "freeze", "lora"]
 
-STAGES = [
-    "SFT",
-    "Reward Modeling",
-    "PPO",
-    "DPO",
-    "Pre-Training"
-]
+TRAINING_STAGES = {
+    "Supervised Fine-Tuning": "sft",
+    "Reward Modeling": "rm",
+    "PPO": "ppo",
+    "DPO": "dpo",
+    "Pre-Training": "pt"
+}
 
 SUPPORTED_MODELS = {
     "LLaMA-7B": "huggyllama/llama-7b",

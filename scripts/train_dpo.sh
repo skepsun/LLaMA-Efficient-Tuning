@@ -1,17 +1,17 @@
-CUDA_VISIBLE_DEVICES=1,2,3,4,5,6 torchrun --nproc_per_node 6 src/train_bash.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4 torchrun --nproc_per_node 5 src/train_bash.py \
     --stage dpo \
-    --model_name_or_path outputs/yulan-llama-2-13b-sft \
+    --model_name_or_path outputs/chinese-llama-2-7b-sft \
     --lora_target q_proj,v_proj \
     --template vicuna \
     --padding_side right \
     --do_train \
     --do_eval \
-    --dataset cvalues_comparison,comparison_gpt4_zh,oaast_rm_zh,oaast_rm,hh_rlhf_en \
+    --dataset news_rm \
     --finetuning_type lora \
     --lora_rank 8 \
     --lora_alpha 32 \
     --optim adamw_hf \
-    --output_dir outputs/yulan-llama-2-13b-dpo \
+    --output_dir outputs/chinese-llama-2-7b-news-dpo \
     --max_target_length 512 \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \

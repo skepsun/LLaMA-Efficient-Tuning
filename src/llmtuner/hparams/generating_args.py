@@ -27,6 +27,18 @@ class GeneratingArguments:
         default=1,
         metadata={"help": "Number of beams for beam search. 1 means no beam search."}
     )
+    num_beam_groups: Optional[int] = field(
+        default=1,
+        metadata={"help": "Number of beams for beam search. 1 means no beam search."}
+    )
+    diversity_penalty: Optional[float] = field(
+        default=0.,
+        metadata={"help": "penalty coefficient for diversity."}
+    )
+    num_return_sequences: Optional[int] = field(
+        default=1,
+        metadata={"help": "Number of returned sequences."}
+    )
     max_length: Optional[int] = field(
         default=None,
         metadata={"help": "The maximum length the generated tokens can have. It can be overridden by max_new_tokens."}

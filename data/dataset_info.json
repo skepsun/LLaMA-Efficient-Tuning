@@ -73,6 +73,16 @@
       "prefix": ""
     }
   },
+  "lima_chinese": {
+    "file_name": "lima-chinese.json",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": "history",
+      "prefix": ""
+    }
+  },
   "medical": {
     "script_url": "medical",
     "columns": {
@@ -287,6 +297,26 @@
   },
   "hh_rlhf_en": {
     "script_url": "hh_rlhf_en",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history",
+      "prefix": ""
+    }
+  },
+  "hh_rlhf_cn": {
+    "script_url": "hh_rlhf_cn",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history",
+      "prefix": ""
+    }
+  },
+  "hh_rlhf_cn_prompt": {
+    "script_url": "hh_rlhf_cn_prompt",
     "columns": {
       "prompt": "instruction",
       "query": "",
@@ -629,7 +659,7 @@
     }
   },
   "platypus":{
-    "hf_hub_url": "garage-bAInd/Open-Platypus",
+    "script_url": "platypus",
     "columns": {
       "prompt": "instruction",
       "query": "input",
@@ -664,6 +694,56 @@
       "prompt": "instruction",
       "query": "",
       "response": "output",
+      "history": "",
+      "prefix": ""
+    }
+  },
+  "news_rm": {
+    "script_url": "news_rm",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": ""
+    },
+    "stage": "rm"
+  },
+  "news_sft": {
+    "script_url": "news_sft",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": ""
+    },
+    "stage": "sft"
+  },
+  "lawyer_llama_data": {
+    "file_name": "lawyer_llama_data/all.json",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": "history",
+      "prefix": "prefix"
+    }
+  },
+  "small_legal": {
+    "file_name": "small_legal.json",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": "",
+      "prefix": ""
+    }
+  },
+  "local_generations": {
+    "file_name": "../outputs/generated_responses/generated_predictions.jsonl",
+    "columns": {
+      "prompt": "input",
+      "query": "",
+      "response": "predict",
       "history": "",
       "prefix": ""
     }

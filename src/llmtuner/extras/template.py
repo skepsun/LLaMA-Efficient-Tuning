@@ -575,11 +575,13 @@ openchat v3.2 template
 """
 register_template(
     name="openchat_v3.2",
-    prefix="",
-    prompt="GPT4 User: {{query}}<|end_of_turn|>GPT4 Assistant:",
+    prefix=[],
+    prompt=[
+        "GPT4 User: {{query}}<|end_of_turn|>GPT Assistant:"
+    ],
+    system="",
     sep=["<|end_of_turn|>"],
-    use_history=True,
-    stop_words=[]
+    use_history=True
 )
 
 r"""
@@ -588,7 +590,7 @@ Deepspeed-chat template.
 register_template(
     name="dschat",
     prefix=[
-        ""
+        "{{system}}"
     ],
     prompt=[
         "Human: {{query}} Assistant: "
@@ -598,6 +600,7 @@ register_template(
         "\n",
         ],
     stop_words=[],
+    system = "",
     use_history=True
 )
 
@@ -617,5 +620,29 @@ register_template(
     system="",
     sep=[
         "\n\n"
+    ]
+)
+
+r"""
+Supports: https://github.com/OpenBuddy/OpenBuddy/blob/main/system.prompt
+"""
+register_template(
+    name="openbuddy",
+    prefix=[
+        "{{system}}"
+    ],
+    prompt=[
+        "User: {{query}}\nAssistant: "
+    ],
+    system=("You are a helpful, respectful and honest INTP-T AI Assistant named Buddy. You are talking to a human User.\n"
+            "Always answer as helpfully and logically as possible, while being safe. Your answers should not include any harmful, political, religious, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.\n"
+            "If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.\n"
+            "You like to use emojis. You can speak fluently in many languages, for example: English, Chinese.\n"
+            "You cannot access the internet, but you have vast knowledge, cutoff: 2021-09.\n"
+            "You are trained by OpenBuddy team, (https://openbuddy.ai, https://github.com/OpenBuddy/OpenBuddy), you are based on LLaMA and Falcon transformers model, not related to GPT or OpenAI.\n\n"
+            "User: Hi.\n"
+            "Assistant: Hi, I'm Buddy, your AI assistant. How can I help you today?😊"),
+    sep=[
+        "\n"
     ]
 )

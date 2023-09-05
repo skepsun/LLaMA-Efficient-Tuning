@@ -1,12 +1,16 @@
 import hashlib
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
-
+import numpy as np
+from datasets import Dataset
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import torch
 from llmtuner.extras.logging import get_logger
 
 if TYPE_CHECKING:
     from datasets import Dataset, IterableDataset
-    from transformers import TrainingArguments
     from llmtuner.hparams import DataArguments
+    from transformers import TrainingArguments
 
 
 logger = get_logger(__name__)
@@ -59,11 +63,9 @@ def split_dataset(
         return {"eval_dataset": dataset}
 
 
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
-from datasets import Dataset
-def deduplicate(data):
+
+
+def deduplicate(data, threshold=0.8):
     device = "cuda"
     # Function to combine instruction and input
     def combine_instruction_input(data):
@@ -71,7 +73,7 @@ def deduplicate(data):
         for d in data:
             instruction = d['prompt']
             # input_text = d['query']
-            if 'query' in d and d['query'] != '':
+            if 'query' in d and (d['query'] != '' and d['query'] != None):
                 instruction += ' ' + d['query']
             instruction += d['response']
             instructions.append(instruction)
@@ -81,8 +83,9 @@ def deduplicate(data):
     new_instructions = combine_instruction_input(data)
 
     # Initialize model
-    # model = SentenceTransformer('all-MiniLM-L6-v2', device=device)
-    model = SentenceTransformer('bge-large-zh', device=device)
+    model = SentenceTransformer('all-MiniLM-L6-v2', device=device)
+    # model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2 ', device=device)
+    # model = SentenceTransformer('moka-ai/m3e-base', device=device)
 
     # Compute embeddings
     new_embeddings = model.encode(new_instructions)
@@ -102,9 +105,11 @@ def deduplicate(data):
             similarity_scores = cosine_similarity([new_embeddings[i]], existing_embeddings)
 
             # If new instruction is sufficiently different, add it to the final_data
-            if np.max(similarity_scores) <= 0.9:
+            if np.max(similarity_scores) <= threshold:
                 final_data.append(data[i])
                 existing_embeddings.append(new_embeddings[i])
     final_data = Dataset.from_list(final_data)
     print(f"original dataset size: {len(data)}, deduplicated dataset size: {len(final_data)}")
+    del model
+    torch.cuda.empty_cache()
     return final_data

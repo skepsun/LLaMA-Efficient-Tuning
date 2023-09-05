@@ -81,6 +81,7 @@ class Seq2SeqPeftTrainer(PeftTrainer):
 
     def save_predictions(
         self,
+        dataset,
         predict_results: "PredictionOutput"
     ) -> None:
         r"""
@@ -90,7 +91,7 @@ class Seq2SeqPeftTrainer(PeftTrainer):
         """
         if not self.is_world_process_zero():
             return
-
+        import pdb; pdb.set_trace()
         output_prediction_file = os.path.join(self.args.output_dir, "generated_predictions.jsonl")
         logger.info(f"Saving prediction results to {output_prediction_file}")
 
@@ -99,9 +100,14 @@ class Seq2SeqPeftTrainer(PeftTrainer):
 
         decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True, clean_up_tokenization_spaces=True)
         decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True, clean_up_tokenization_spaces=True)
+        decoded_inputs = self.tokenizer.batch_decode(dataset['input_ids'], clean_up_tokenization_spaces=True)
+
+        if len(decoded_labels) < len(decoded_preds):
+            assert len(decoded_preds)%len(decoded_labels) == 0
+            decoded_preds = np.array(decoded_preds).reshape(len(decoded_labels), -1).tolist()
 
         with open(output_prediction_file, "w", encoding="utf-8") as writer:
             res: List[str] = []
-            for pred, label in zip(decoded_preds, decoded_labels):
-                res.append(json.dumps({"label": label, "predict": pred}, ensure_ascii=False))
+            for label, pred, input in zip(decoded_labels,decoded_preds,decoded_inputs):
+                res.append(json.dumps({"label": label, "predict": pred, "input": input}, ensure_ascii=False))
             writer.write("\n".join(res))

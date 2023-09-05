@@ -97,7 +97,7 @@ def preprocess_dataset(
 
     def preprocess_pairwise_dataset(examples):
         # build input pairs with format `<bos> X`, `Y1 <eos>` and `Y2 <eos>`
-        model_inputs = {"prompt_ids": [], "chosen_ids": [], "rejected_ids": []}
+        model_inputs = {"prompt_ids": [], "chosen_ids": [], "rejected_ids": [], "num_responses": []}
         for query, response, history, system in construct_example(examples):
             prompt_ids, chosen_ids = template.encode_oneturn(tokenizer, query, response[0], history, system)
             _, rejected_ids = template.encode_oneturn(tokenizer, query, response[1], history, system)
@@ -112,8 +112,30 @@ def preprocess_dataset(
             model_inputs["prompt_ids"].append(prompt_ids)
             model_inputs["chosen_ids"].append(chosen_ids)
             model_inputs["rejected_ids"].append(rejected_ids)
+            model_inputs["num_responses"].append(2)
         return model_inputs
     
+    def preprocess_ranking_dataset(examples):
+        # build input pairs with format `<bos> X`, `Y1 <eos>` and `Y2 <eos>`
+        model_inputs = {"prompt_ids": [], "response_ids": [], "num_responses": []}
+        
+        for query, response, history, system in construct_example(examples):
+            response_ids = []
+            for i in range(len(response)):
+                prompt_ids, target_ids = template.encode_oneturn(tokenizer, query, response[i], history, system)
+
+                if len(prompt_ids) > data_args.max_source_length:
+                    prompt_ids = prompt_ids[:data_args.max_source_length]
+                if len(target_ids) > data_args.max_target_length:
+                    target_ids = target_ids[:data_args.max_target_length]
+
+                if i == 0:
+                    model_inputs["prompt_ids"].append(prompt_ids)
+                response_ids.append(target_ids)
+            model_inputs["response_ids"].append(response_ids)
+            model_inputs["num_responses"].append(len(response))
+        return model_inputs
+
     def preprocess_dpo_dataset(examples):
         # build input pairs with format `<bos> X Y1 <eos>` and `<bos> X Y2 <eos>`
         model_inputs = {"chosen_input_ids": [], "chosen_attention_mask": [], "chosen_labels": [],
@@ -170,6 +192,13 @@ def preprocess_dataset(
         print("rejected_ids:\n{}".format(example["rejected_ids"]))
         print("rejected:\n{}".format(tokenizer.decode(example["rejected_ids"], skip_special_tokens=False)))
 
+    def print_ranking_dataset_example(example):
+        print("prompt_ids:\n{}".format(example["prompt_ids"]))
+        print("prompt:\n{}".format(tokenizer.decode(example["prompt_ids"], skip_special_tokens=False)))
+        for i, ids in enumerate(example["response_ids"]):
+            print("response_ids {}:\n{}".format(i,ids))
+            print("response {}:\n{}".format(i, tokenizer.decode(ids, skip_special_tokens=False)))
+
     def print_dpo_dataset_example(example):
         for key in ["prompt", "chosen", "rejected"]:
             print("{}_input_ids:\n{}".format(key, example[f"{key}_input_ids"]))
@@ -194,10 +223,14 @@ def preprocess_dataset(
         dataset = dataset.filter(lambda example: example["prompt"] and example["response"])
         preprocess_function = preprocess_supervised_dataset
         print_function = print_supervised_dataset_example
-    elif stage == "rm":
+    elif stage == "rm" and not training_args.do_predict:
         dataset = dataset.filter(lambda example: example["prompt"] and len(example["response"]) > 1)
         preprocess_function = preprocess_pairwise_dataset
         print_function = print_pairwise_dataset_example
+    elif stage == "rm" and training_args.do_predict:
+        dataset = dataset.filter(lambda example: example["prompt"] and len(example["response"]) > 1)
+        preprocess_function = preprocess_ranking_dataset
+        print_function = print_ranking_dataset_example
     elif stage == "dpo":
         dataset = dataset.filter(lambda example: example["prompt"] and len(example["response"]) > 1)
         preprocess_function = preprocess_dpo_dataset

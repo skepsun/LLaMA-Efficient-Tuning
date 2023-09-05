@@ -8,7 +8,7 @@ from llmtuner.dsets import get_dataset, preprocess_dataset, split_dataset
 from llmtuner.extras.ploting import plot_loss
 from llmtuner.tuner.core import load_model_and_tokenizer
 from llmtuner.tuner.rm.metric import compute_accuracy
-from llmtuner.tuner.rm.collator import PairwiseDataCollatorWithPadding
+from llmtuner.tuner.rm.collator import PairwiseDataCollatorWithPadding, RankingDataCollatorWithPadding
 from llmtuner.tuner.rm.trainer import PairwisePeftTrainer
 
 if TYPE_CHECKING:
@@ -26,7 +26,8 @@ def run_rm(
     dataset = get_dataset(model_args, data_args)
     model, tokenizer = load_model_and_tokenizer(model_args, finetuning_args, training_args.do_train, stage="rm")
     dataset = preprocess_dataset(dataset, tokenizer, data_args, training_args, stage="rm")
-    data_collator = PairwiseDataCollatorWithPadding(tokenizer)
+    data_collator = PairwiseDataCollatorWithPadding(tokenizer) if not training_args.do_predict \
+        else RankingDataCollatorWithPadding(tokenizer)
 
     training_args.remove_unused_columns = False # important for pairwise dataset
 
@@ -38,7 +39,7 @@ def run_rm(
         tokenizer=tokenizer,
         data_collator=data_collator,
         callbacks=callbacks,
-        compute_metrics=compute_accuracy,
+        compute_metrics=compute_accuracy if not training_args.do_predict else None,
         **split_dataset(dataset, data_args, training_args)
     )
 

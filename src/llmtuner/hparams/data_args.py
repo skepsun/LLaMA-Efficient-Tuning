@@ -54,6 +54,14 @@ class DataArguments:
         default="concat",
         metadata={"help": "Strategy to use in dataset mixing."}
     )
+    deduplicate: Optional[bool] = field(
+        default=False,
+        metadata={"help": "Deduplicate dataset using cosine similarities among embeddings computed by a Sentence2Emebedding model. Only useful for non-streaming mode."}
+    )
+    similarity_threshold: Optional[float] = field(
+        default=0.8,
+        metadata={"help": "Threshold for deduplicating. The larger it is, the more samples will be preserved."}
+    )
     interleave_probs: Optional[str] = field(
         default=None,
         metadata={"help": "Probabilities to sample data from datasets. Use commas to separate multiple datasets."}

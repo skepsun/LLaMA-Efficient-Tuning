@@ -84,13 +84,15 @@ def get_dataset(
         all_datasets.append(dataset)
 
     if len(data_args.dataset_list) == 1:
-        all_datasets[0] = deduplicate(all_datasets[0])
+        if data_args.deduplicate:
+            all_datasets[0] = deduplicate(all_datasets[0], threshold=data_args.similarity_threshold)
         return all_datasets[0]
     elif data_args.mix_strategy == "concat":
         if data_args.streaming:
             logger.warning("The samples between different datasets will not be mixed in streaming mode.")
         concat_dataset = concatenate_datasets(all_datasets)
-        concat_dataset = deduplicate(concat_dataset)
+        if data_args.deduplicate:
+            concat_dataset = deduplicate(concat_dataset, threshold=data_args.similarity_threshold)
         return concat_dataset # type: ignore
     elif data_args.mix_strategy.startswith("interleave"):
         if not data_args.streaming:

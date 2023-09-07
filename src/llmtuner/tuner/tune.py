@@ -6,7 +6,7 @@ from llmtuner.tuner.core import get_train_args, load_model_and_tokenizer
 from llmtuner.tuner.pt import run_pt
 from llmtuner.tuner.sft import run_sft
 from llmtuner.tuner.rm import run_rm
-from llmtuner.tuner.ppo import run_rs
+from llmtuner.tuner.rs import run_rs
 from llmtuner.tuner.ppo import run_ppo
 from llmtuner.tuner.dpo import run_dpo
 

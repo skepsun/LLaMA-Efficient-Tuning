@@ -33,12 +33,9 @@ class PairwisePeftTrainer(PeftTrainer):
         r"""
         Computes pairwise loss. The first n examples are chosen and the last n examples are rejected.
 
-        We use score on the EOS token to represent reward of the whole sentence.
+        Subclass and override to inject custom behavior.
 
-        Subclass and override to inject custom behavior. It should not be directly used by external scripts.
-
-        Note that the first element will be removed from the output tuple.
-
+        Note that the first element will be removed from the output tuple. 
         See: https://github.com/huggingface/transformers/blob/v4.30.2/src/transformers/trainer.py#L3509
         """
         # batch_size = inputs["input_ids"].size(0) // 2

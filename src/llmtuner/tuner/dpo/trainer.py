@@ -97,8 +97,17 @@ class DPOPeftTrainer(DPOTrainer, PeftTrainer):
                 pad_token_id=self.tokenizer.pad_token_id,
             )
 
+<<<<<<< HEAD
         policy_output = pad_to_length(policy_output, self.config.max_length, self.tokenizer.pad_token_id)
         policy_output_decoded = self.tokenizer.batch_decode(policy_output, skip_special_tokens=True)
+=======
+        if ref_model is not None:
+            if self.is_deepspeed_enabled:
+                self.ref_model, = self.accelerator._prepare_deepspeed(self.ref_model)
+                self.ref_model.eval()
+            else:
+                self.ref_model = self.accelerator.prepare_model(self.ref_model, evaluation_mode=True)
+>>>>>>> a51b7c98acc599de5ed2eaeeebe7b184105722c5
 
         reference_output = pad_to_length(reference_output, self.config.max_length, self.tokenizer.pad_token_id)
         reference_output_decoded = self.tokenizer.batch_decode(reference_output, skip_special_tokens=True)

@@ -1,27 +1,26 @@
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node=7 src/train_bash.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 deepspeed --num_gpus=8 src/train_bash.py \
     --stage sft \
     --deepspeed configs/ds_zero2.json \
-    --lora_target q_proj,v_proj \
-    --template openchat_v3.2 \
-    --model_name_or_path ../openchat/outputs/chinese-llama-2-7b-openchat/ep_4 \
+    --lora_target W_pack,o_proj,gate_proj,up_proj,down_proj \
+    --template vicuna \
+    --model_name_or_path ../Baichuan2-13B-Base \
     --do_train \
-    --dataset openchat_sharegpt,lawyer_llama_data \
-    --deduplicate True \
-    --similarity_threshold 0.8 \
+    --dataset lawyer_llama_data,news_ext,cvalues_sft,belle_platypus_sharegpt4 \
     --finetuning_type full \
     --lora_rank 8 \
     --lora_alpha 32 \
     --lora_dropout 0.05 \
     --warmup_ratio 0.03 \
-    --output_dir outputs/chinese-llama-2-7b-sft-openchat-law \
-    --per_device_train_batch_size 8 \
-    --gradient_accumulation_steps 8 \
+    --optim adamw_torch \
+    --output_dir outputs/baichuan2-13b-sft \
+    --per_device_train_batch_size 2 \
+    --gradient_accumulation_steps 4 \
     --preprocessing_num_workers 12 \
     --lr_scheduler_type cosine \
-    --evaluation_strategy steps \
+    --evaluation_strategy epochs \
     --save_strategy steps \
-    --max_source_length 512 \
-    --max_target_length 512 \
+    --max_source_length 1024 \
+    --max_target_length 1024 \
     --eval_steps 100 \
     --logging_steps 1 \
     --save_steps 100 \
@@ -33,5 +32,5 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node=7 src/train_bash.py
     --overwrite_output_dir \
     --plot_loss \
     --report_to none \
-    --bf16 \
+    --fp16 \
     --tf32 True

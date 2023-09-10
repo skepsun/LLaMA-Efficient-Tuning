@@ -5,7 +5,7 @@ import math
 from typing import TYPE_CHECKING
 from torch.optim import AdamW
 from typing import Optional, List
-from transformers import DataCollatorForSeq2Seq
+from transformers import DataCollatorForSeq2Seq, Seq2SeqTrainingArguments
 from transformers.optimization import get_scheduler
 
 from llmtuner.dsets import get_dataset, preprocess_dataset, split_dataset

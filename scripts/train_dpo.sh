@@ -1,17 +1,18 @@
 CUDA_VISIBLE_DEVICES=0,1,2,3,4 torchrun --nproc_per_node 5 src/train_bash.py \
     --stage dpo \
-    --model_name_or_path outputs/chinese-llama-2-7b-sft \
-    --lora_target q_proj,v_proj \
-    --template vicuna \
+    --model_name_or_path ../Baichuan-13B-Chat \
+    --lora_target W_pack \
+    --template baichuan \
     --padding_side right \
     --do_train \
     --do_eval \
     --dataset news_rm \
     --finetuning_type lora \
+    --quantization_bit 4 \
     --lora_rank 8 \
     --lora_alpha 32 \
     --optim adamw_hf \
-    --output_dir outputs/chinese-llama-2-7b-news-dpo \
+    --output_dir outputs/baichuan-13b-news-dpo \
     --max_target_length 512 \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \

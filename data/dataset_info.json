@@ -595,6 +595,16 @@
       "prefix": ""
     }
   },
+  "belle_platypus_sharegpt4":{
+    "script_url": "belle_platypus_sharegpt4",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": "history",
+      "prefix": ""
+    }
+  },
   "evol_sharegpt_chinese":{
     "script_url": "evol_sharegpt_chinese",
     "columns": {

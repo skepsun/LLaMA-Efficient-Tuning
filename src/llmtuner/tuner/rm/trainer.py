@@ -75,9 +75,10 @@ class PairwisePeftTrainer(PeftTrainer):
         
         scores = predict_results.predictions
         scores = np.concatenate([score.reshape(-1,1) for score in scores],axis=1)
+        idx = np.argsort(-scores, axis=1)
 
         with open(output_prediction_file, "w", encoding="utf-8") as writer:
             res: List[str] = []
             for i in range(len(scores)):
-                res.append(json.dumps({"input": dataset[i]["input"], "response": dataset[i]["response"], "score": scores[i].tolist()}))
+                res.append(json.dumps({"input": dataset[i]["input"], "response": dataset[i]["response"][idx[i]], "score": scores[i][idx[i]].tolist()}))
             writer.write("\n".join(res))

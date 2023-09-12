@@ -22,8 +22,8 @@ def quantize(input_dir: str, output_dir: str, data_file: str, max_length: int, m
             prompt = prefix + "\n"
             if "history" in examples:
                 for user_query, bot_resp in examples["history"][i]:
-                    prompt += "Human: {}\nAssistant: {}\n".format(user_query, bot_resp)
-            prompt += "Human: {}\nAssistant: {}".format(
+                    prompt += "USER: {}\nASSISTANT: {}\n".format(user_query, bot_resp)
+            prompt += "USER: {}\nASSISTANT: {}".format(
                 examples["instruction"][i] + "\n" + examples["input"][i], examples["output"][i]
             )
             texts.append(prompt)
@@ -38,7 +38,8 @@ def quantize(input_dir: str, output_dir: str, data_file: str, max_length: int, m
     quantize_config = BaseQuantizeConfig(
         bits=4,
         group_size=128,
-        desc_act=False
+        desc_act=False,
+        damp_percent=0.1,
     )
 
     model = AutoGPTQForCausalLM.from_pretrained(input_dir, quantize_config, trust_remote_code=True)

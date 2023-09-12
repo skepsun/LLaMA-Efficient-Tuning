@@ -4,27 +4,26 @@ import torch
 from tqdm import tqdm
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
 
-from transformers import GenerationConfig, TrainerState, TrainerControl
+from transformers import GenerationConfig, Trainer, TrainerState, TrainerControl
+from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
 from trl import PPOTrainer
 from trl.core import LengthSampler, PPODecorators, logprobs_from_logits
 
 from llmtuner.extras.logging import get_logger
 from llmtuner.extras.misc import AverageMeter, count_parameters, get_logits_processor
-from llmtuner.tuner.core.trainer import PeftTrainer
 from llmtuner.tuner.ppo.utils import cast_layernorm_dtype, replace_model
 
 if TYPE_CHECKING:
-    from transformers import Seq2SeqTrainingArguments
+    from transformers import Seq2SeqTrainingArguments, TrainerCallback
     from trl import AutoModelForCausalLMWithValueHead
-    from llmtuner.extras.callbacks import LogCallback
-    from llmtuner.hparams import FinetuningArguments, GeneratingArguments
+    from llmtuner.hparams import GeneratingArguments
 
 
 logger = get_logger(__name__)
 
 
-class PPOPeftTrainer(PPOTrainer, PeftTrainer):
+class CustomPPOTrainer(PPOTrainer, Trainer):
     r"""
     Inherits PPOTrainer.
     """
@@ -32,9 +31,8 @@ class PPOPeftTrainer(PPOTrainer, PeftTrainer):
     def __init__(
         self,
         training_args: "Seq2SeqTrainingArguments",
-        finetuning_args: "FinetuningArguments",
         generating_args: "GeneratingArguments",
-        callbacks: List["LogCallback"],
+        callbacks: List["TrainerCallback"],
         compute_dtype: torch.dtype,
         **kwargs
     ):
@@ -43,9 +41,8 @@ class PPOPeftTrainer(PPOTrainer, PeftTrainer):
             raise ValueError("PPOTrainer is incompatible with DeepSpeed.")
 
         self.args = training_args
-        self.finetuning_args = finetuning_args
         self.generating_args = generating_args
-        self.log_callback = callbacks[0]
+        self.log_callback, self.save_callback = callbacks[0], callbacks[1]
         self.compute_dtype = compute_dtype
         self.state = TrainerState()
         self.control = TrainerControl()
@@ -100,7 +97,6 @@ class PPOPeftTrainer(PPOTrainer, PeftTrainer):
             # Cast to inference mode
             unwrapped_model.gradient_checkpointing_disable()
             unwrapped_model.config.use_cache = True
-            unwrapped_model, layer_norm_params = cast_layernorm_dtype(unwrapped_model, self.compute_dtype)
             self.model.eval()
 
             # Get inputs
@@ -111,7 +107,6 @@ class PPOPeftTrainer(PPOTrainer, PeftTrainer):
             # Cast to training mode
             unwrapped_model.gradient_checkpointing_enable()
             unwrapped_model.config.use_cache = False
-            unwrapped_model, _ = cast_layernorm_dtype(unwrapped_model, self.compute_dtype, layer_norm_params)
             self.model.train()
 
             # Run PPO step
@@ -139,7 +134,12 @@ class PPOPeftTrainer(PPOTrainer, PeftTrainer):
                 reward_meter.reset()
 
             if (step+1) % self.args.save_steps == 0: # save checkpoint
-                self.save_model(os.path.join(self.args.output_dir, f"checkpoint-{step+1}"))
+                self.save_model(os.path.join(
+                    self.args.output_dir, "{}-{}".format(PREFIX_CHECKPOINT_DIR, self.state.global_step)
+                ))
+                self.save_callback.on_save(
+                    self.args, self.state, self.control, model=self.accelerator.unwrap_model(self.model)
+                )
 
             if self.control.should_epoch_stop or self.control.should_training_stop:
                 break
@@ -148,7 +148,9 @@ class PPOPeftTrainer(PPOTrainer, PeftTrainer):
                 dataiter = iter(self.dataloader)
                 steps_trained = 0
 
-        self.log_callback.on_train_end(self.args, self.state, self.control)
+        self.log_callback.on_train_end(
+            self.args, self.state, self.control, model=self.accelerator.unwrap_model(self.model)
+        )
 
     @torch.no_grad()
     def get_inputs(
@@ -168,8 +170,10 @@ class PPOPeftTrainer(PPOTrainer, PeftTrainer):
         )
 
         input_ids = batch["input_ids"]
+        self.model, layer_norm_params = cast_layernorm_dtype(self.model, self.compute_dtype)
         unwrapped_model: "AutoModelForCausalLMWithValueHead" = self.accelerator.unwrap_model(self.model)
         response: torch.Tensor = unwrapped_model.generate(**gen_kwargs)
+        self.model, _ = cast_layernorm_dtype(self.model, self.compute_dtype, layer_norm_params)
         query, response = input_ids.detach().cpu(), response[:, input_ids.size(-1):].detach().cpu()
 
         queries, responses = [], []

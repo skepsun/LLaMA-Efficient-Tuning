@@ -12,39 +12,27 @@
 
 ## 更新日志
 
+[23/09/10] 现在我们支持了 LLaMA 模型的 **[FlashAttention](https://github.com/Dao-AILab/flash-attention)**。如果您使用的是 RTX4090、A100 或 H100 GPU，请使用 `--flash_attn` 参数以启用 FlashAttention-2（实验性功能）。
+
 [23/08/18] 现在我们支持了**训练状态恢复**，请将 `transformers` 升级至 `4.31.0` 以启用此功能。
 
-[23/08/12] 现在我们支持了 **RoPE 插值**来扩展 LLaMA 模型的上下文长度。请尝试使用 `--rope_scaling linear` 参数训练模型或使用 `--rope_scaling dynamic` 参数评估模型。
+[23/08/12] 现在我们支持了 **RoPE 插值**来扩展 LLaMA 模型的上下文长度。请使用 `--rope_scaling linear` 参数训练模型或使用 `--rope_scaling dynamic` 参数评估模型。
 
-[23/08/11] 现在我们支持了指令模型的 **[DPO 训练](https://arxiv.org/abs/2305.18290)**。详情请参阅[此示例](#dpo-训练)（实验性功能）。
-
-[23/08/03] 现在我们支持了 **Qwen-7B** 模型的训练。请尝试使用 `--model_name_or_path Qwen/Qwen-7B-Chat` 和 `--lora_target c_attn` 参数。使用 Qwen-7B-Chat 模型时请添加 `--template chatml` 参数。
+[23/08/11] 现在我们支持了指令模型的 **[DPO 训练](https://arxiv.org/abs/2305.18290)**。详情请参阅[此示例](#dpo-训练)。
 
 [23/07/31] 现在我们支持了**数据流式加载**。请尝试使用 `--streaming` 和 `--max_steps 10000` 参数来流式加载数据集。
 
 [23/07/29] 我们在 Hugging Face 发布了两个 13B 指令微调模型。详细内容请查阅我们的 Hugging Face 项目（[LLaMA-2](https://huggingface.co/hiyouga/Llama-2-Chinese-13b-chat) / [Baichuan](https://huggingface.co/hiyouga/Baichuan-13B-sft)）。
 
-[23/07/19] 现在我们支持了 **LLaMA-2** 模型的训练。请尝试使用 `--model_name_or_path meta-llama/Llama-2-7b-hf` 参数。使用 LLaMA-2-chat 模型时请添加 `--template llama2` 参数。
-
 [23/07/18] 我们开发了支持训练和测试的**浏览器一体化界面**。请尝试使用 `train_web.py` 在您的浏览器中微调模型。感谢 [@KanadeSiina](https://github.com/KanadeSiina) 和 [@codemayq](https://github.com/codemayq) 在该功能开发中付出的努力。
 
-[23/07/11] 现在我们支持了 **Baichuan-13B** 模型的训练。请尝试使用 `--model_name_or_path baichuan-inc/Baichuan-13B-Base` 和 `--lora_target W_pack` 参数。使用 Baichuan-13B-Chat 模型时请添加 `--template baichuan` 参数。
-
 [23/07/09] 我们开源了 **[FastEdit](https://github.com/hiyouga/FastEdit)** ⚡🩹，一个简单易用的、能迅速编辑大模型事实记忆的工具包。如果您感兴趣请关注我们的 [FastEdit](https://github.com/hiyouga/FastEdit) 项目。
-
-[23/07/07] 现在我们支持了 **InternLM-7B** 模型的训练。请尝试使用 `--model_name_or_path internlm/internlm-7b` 参数。使用 InternLM-chat 模型时请添加 `--template intern` 参数。
-
-[23/07/05] 现在我们支持了 **Falcon-7B/40B** 模型的训练。请尝试使用 `--model_name_or_path tiiuae/falcon-7b` 和 `--lora_target query_key_value` 参数。
 
 [23/06/29] 我们提供了一个**可复现的**指令模型微调示例，详细内容请查阅 [Baichuan-7B-sft](https://huggingface.co/hiyouga/Baichuan-7B-sft)。
 
 [23/06/22] 我们对齐了[示例 API](src/api_demo.py) 与 [OpenAI API](https://platform.openai.com/docs/api-reference/chat) 的格式，您可以将微调模型接入**任意基于 ChatGPT 的应用**中。
 
-[23/06/15] 现在我们支持了 **Baichuan-7B** 模型的训练。请尝试使用 `--model_name_or_path baichuan-inc/Baichuan-7B` 和 `--lora_target W_pack` 参数。
-
 [23/06/03] 现在我们实现了 4 比特的 LoRA 训练（也称 **[QLoRA](https://github.com/artidoro/qlora)**）。请尝试使用 `--quantization_bit 4` 参数进行 4 比特量化微调。
-
-[23/05/31] 现在我们支持了 **BLOOM & BLOOMZ** 模型的训练。请尝试使用 `--model_name_or_path bigscience/bloomz-7b1-mt` 和 `--lora_target query_key_value` 参数。
 
 ## 模型
 
@@ -62,8 +50,10 @@
 | [XVERSE](https://github.com/xverse-ai/XVERSE-13B)        | 13B                         | q_proj,v_proj     | xverse    |
 | [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B)         | 6B                          | query_key_value   | chatglm2  |
 
-- **默认模块**应作为 `--lora_target` 参数的默认值，可使用 `--lora_target all` 参数指定全部模块。
-- 对于所有“基座”（Base）模型，`--template` 参数可以是 `default`, `alpaca`, `vicuna` 等任意值。但“对话”（Chat）模型请务必使用对应的模板。
+> [!NOTE]
+> **默认模块**应作为 `--lora_target` 参数的默认值，可使用 `--lora_target all` 参数指定全部模块。
+>
+> 对于所有“基座”（Base）模型，`--template` 参数可以是 `default`, `alpaca`, `vicuna` 等任意值。但“对话”（Chat）模型请务必使用对应的模板。
 
 ## 训练方法
 
@@ -75,7 +65,8 @@
 | PPO 训练               |                    |                    | :white_check_mark: | :white_check_mark: |
 | DPO 训练               | :white_check_mark: |                    | :white_check_mark: | :white_check_mark: |
 
-- 使用 `--quantization_bit 4/8` 参数来启用 QLoRA 训练。
+> [!NOTE]
+> 请使用 `--quantization_bit 4/8` 参数来启用 QLoRA 训练。
 
 ## 数据集
 
@@ -125,7 +116,7 @@ huggingface-cli login
 
 - Python 3.8+ 和 PyTorch 1.13.1+
 - 🤗Transformers, Datasets, Accelerate, PEFT 和 TRL
-- sentencepiece 和 tiktoken
+- sentencepiece, protobuf 和 tiktoken
 - jieba, rouge-chinese 和 nltk (用于评估)
 - gradio 和 matplotlib (用于网页端交互)
 - uvicorn, fastapi 和 sse-starlette (用于 API)
@@ -138,7 +129,8 @@ huggingface-cli login
 
 关于数据集文件的格式，请参考 `data/example_dataset` 文件夹的内容。构建自定义数据集时，既可以使用单个 `.json` 文件，也可以使用一个[数据加载脚本](https://huggingface.co/docs/datasets/dataset_script)和多个文件。
 
-注意：使用自定义数据集时，请更新 `data/dataset_info.json` 文件，该文件的格式请参考 `data/README.md`。
+> [!NOTE]
+> 使用自定义数据集时，请更新 `data/dataset_info.json` 文件，该文件的格式请参考 `data/README.md`。
 
 ### 环境搭建（可跳过）
 
@@ -164,9 +156,13 @@ CUDA_VISIBLE_DEVICES=0 python src/train_web.py
 
 我们极力推荐新手使用浏览器一体化界面，因为它还可以**自动**生成运行所需的命令行脚本。
 
-目前网页 UI 仅支持**单卡训练**。
+> [!WARNING]
+> 目前网页 UI 仅支持**单卡训练**。
 
 ### 单 GPU 训练
+
+> [!IMPORTANT]
+> 如果您使用多张 GPU 训练模型，请移步[多 GPU 分布式训练](#多-gpu-分布式训练)部分。
 
 #### 预训练
 
@@ -299,19 +295,13 @@ accelerate config # 首先配置分布式环境
 accelerate launch src/train_bash.py # 参数同上
 ```
 
-<details><summary>使用 DeepSpeed ZeRO-2 进行全参数微调的 Accelerate 配置示例</summary>
+<details><summary>LoRA 训练的 Accelerate 配置示例</summary>
 
 ```yaml
 compute_environment: LOCAL_MACHINE
-deepspeed_config:
-  gradient_accumulation_steps: 4
-  gradient_clipping: 0.5
-  offload_optimizer_device: none
-  offload_param_device: none
-  zero3_init_flag: false
-  zero_stage: 2
-distributed_type: DEEPSPEED
+distributed_type: MULTI_GPU
 downcast_bf16: 'no'
+gpu_ids: all
 machine_rank: 0
 main_training_function: main
 mixed_precision: fp16
@@ -335,10 +325,11 @@ deepspeed --num_gpus 8 --master_port=9901 src/train_bash.py \
     ... # 参数同上
 ```
 
-<details><summary>使用 DeepSpeed ZeRO-2 进行全参数微调的 DeepSpeed 配置示例</summary>
+<details><summary>使用 DeepSpeed ZeRO-2 进行全参数训练的 DeepSpeed 配置示例</summary>
 
 ```json
 {
+  "train_batch_size": "auto",
   "train_micro_batch_size_per_gpu": "auto",
   "gradient_accumulation_steps": "auto",
   "gradient_clipping": "auto",
@@ -386,7 +377,8 @@ python src/api_demo.py \
     --checkpoint_dir path_to_checkpoint
 ```
 
-关于 API 文档请见 `http://localhost:8000/docs`。
+> [!NOTE]
+> 关于 API 文档请见 `http://localhost:8000/docs`。
 
 ### 命令行测试
 
@@ -425,7 +417,8 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --predict_with_generate
 ```
 
-我们建议在量化模型的评估中使用 `--per_device_eval_batch_size=1` 和 `--max_target_length 128`。
+> [!NOTE]
+> 我们建议在量化模型的评估中使用 `--per_device_eval_batch_size=1` 和 `--max_target_length 128`。
 
 ### 模型预测
 
@@ -443,12 +436,6 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --max_samples 100 \
     --predict_with_generate
 ```
-
-## TODO
-
-- [ ] 实现 flash attention ([torch](https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html) / [xformers](https://github.com/facebookresearch/xformers) / [flashattn](https://github.com/Dao-AILab/flash-attention))。
-- [ ] 在推理阶段使用 Multi-query attention 进行加速。
-- [ ] 支持 RLHF 的全参数微调。
 
 ## 协议
 
@@ -482,7 +469,7 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
 
 ## 致谢
 
-本项目是 [ChatGLM-Efficient-Tuning](https://github.com/hiyouga/ChatGLM-Efficient-Tuning) 的同类项目。采用了类似的代码结构和训练方法。
+本项目受益于 [PEFT](https://github.com/huggingface/peft)、[QLoRA](https://github.com/artidoro/qlora) 和 [OpenChatKit](https://github.com/togethercomputer/OpenChatKit)，感谢以上诸位作者的付出。
 
 ## Star History
 

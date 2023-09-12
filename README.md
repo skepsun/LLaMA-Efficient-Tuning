@@ -19,39 +19,27 @@
 
 ## Changelog
 
+[23/09/10] Now we support using **[FlashAttention](https://github.com/Dao-AILab/flash-attention)** for the LLaMA models. Try `--flash_attn` argument to enable FlashAttention-2 if you are using RTX4090, A100 or H100 GPUs (experimental feature).
+
 [23/08/18] Now we support **resuming training**, upgrade `transformers` to `4.31.0` to enjoy this feature.
 
 [23/08/12] Now we support **RoPE scaling** to extend the context length of the LLaMA models. Try `--rope_scaling linear` argument in training and `--rope_scaling dynamic` argument at inference to extrapolate the position embeddings.
 
-[23/08/11] Now we support **[DPO training](https://arxiv.org/abs/2305.18290)** for instruction-tuned models. See [this example](#dpo-training) to train your models (experimental feature).
-
-[23/08/03] Now we support training the **Qwen-7B** model in this repo. Try `--model_name_or_path Qwen/Qwen-7B-Chat` and `--lora_target c_attn` arguments to train the Qwen-7B model. Remember to use `--template chatml` argument when you are using the Qwen-7B-Chat model.
+[23/08/11] Now we support **[DPO training](https://arxiv.org/abs/2305.18290)** for instruction-tuned models. See [this example](#dpo-training) to train your models.
 
 [23/07/31] Now we support **dataset streaming**. Try `--streaming` and `--max_steps 10000` arguments to load your dataset in streaming mode.
 
 [23/07/29] We release two instruction-tuned 13B models at Hugging Face. See these Hugging Face Repos ([LLaMA-2](https://huggingface.co/hiyouga/Llama-2-Chinese-13b-chat) / [Baichuan](https://huggingface.co/hiyouga/Baichuan-13B-sft)) for details.
 
-[23/07/19] Now we support training the **LLaMA-2** models in this repo. Try `--model_name_or_path meta-llama/Llama-2-7b-hf` argument to use the LLaMA-2 model. Remember to use `--template llama2` argument when you are using the LLaMA-2-chat model.
-
 [23/07/18] Now we develop an **all-in-one Web UI** for training, evaluation and inference. Try `train_web.py` to fine-tune models in your Web browser. Thank [@KanadeSiina](https://github.com/KanadeSiina) and [@codemayq](https://github.com/codemayq) for their efforts in the development.
 
-[23/07/11] Now we support training the **Baichuan-13B** model in this repo. Try `--model_name_or_path baichuan-inc/Baichuan-13B-Base` and `--lora_target W_pack` arguments to train the Baichuan-13B model. Remember to use `--template baichuan` argument when you are using the Baichuan-13B-Chat model.
-
 [23/07/09] Now we release **[FastEdit](https://github.com/hiyouga/FastEdit)** ⚡🩹, an easy-to-use package for editing the factual knowledge of large language models efficiently. Please follow [FastEdit](https://github.com/hiyouga/FastEdit) if you are interested.
-
-[23/07/07] Now we support training the **InternLM-7B** model in this repo. Try `--model_name_or_path internlm/internlm-7b` argument to use the InternLM model. Remember to use `--template intern` argument when you are using the InternLM-chat model.
-
-[23/07/05] Now we support training the **Falcon-7B/40B** models in this repo. Try `--model_name_or_path tiiuae/falcon-7b` and `--lora_target query_key_value` arguments to use the Falcon model.
 
 [23/06/29] We provide a **reproducible example** of training a chat model using instruction-following datasets, see [Baichuan-7B-sft](https://huggingface.co/hiyouga/Baichuan-7B-sft) for details.
 
 [23/06/22] Now we align the [demo API](src/api_demo.py) with the [OpenAI's](https://platform.openai.com/docs/api-reference/chat) format where you can insert the fine-tuned model in **arbitrary ChatGPT-based applications**.
 
-[23/06/15] Now we support training the **Baichuan-7B** model in this repo. Try `--model_name_or_path baichuan-inc/Baichuan-7B` and `--lora_target W_pack` arguments to use the Baichuan-7B model.
-
 [23/06/03] Now we support quantized training and inference (aka **[QLoRA](https://github.com/artidoro/qlora)**). Try `--quantization_bit 4/8` argument to work with quantized models.
-
-[23/05/31] Now we support training the **BLOOM & BLOOMZ** models in this repo. Try `--model_name_or_path bigscience/bloomz-7b1-mt` and `--lora_target query_key_value` arguments to use the BLOOMZ model.
 
 ## Supported Models
 
@@ -69,8 +57,10 @@
 | [XVERSE](https://github.com/xverse-ai/XVERSE-13B)        | 13B                         | q_proj,v_proj     | xverse    |
 | [ChatGLM2](https://github.com/THUDM/ChatGLM2-6B)         | 6B                          | query_key_value   | chatglm2  |
 
-- **Default module** is used for the `--lora_target` argument, you can use `--lora_target all` to specify all the available modules.
-- For the "base" models, the `--template` argument can be chosen from `default`, `alpaca`, `vicuna` etc. But make sure to use the corresponding template for the "chat" models.
+> [!NOTE]
+> **Default module** is used for the `--lora_target` argument, you can use `--lora_target all` to specify all the available modules.
+>
+> For the "base" models, the `--template` argument can be chosen from `default`, `alpaca`, `vicuna` etc. But make sure to use the corresponding template for the "chat" models.
 
 ## Supported Training Approaches
 
@@ -82,7 +72,8 @@
 | PPO Training           |                    |                    | :white_check_mark: | :white_check_mark: |
 | DPO Training           | :white_check_mark: |                    | :white_check_mark: | :white_check_mark: |
 
-- Use `--quantization_bit 4/8` argument to enable QLoRA.
+> [!NOTE]
+> Use `--quantization_bit 4/8` argument to enable QLoRA.
 
 ## Provided Datasets
 
@@ -132,7 +123,7 @@ huggingface-cli login
 
 - Python 3.8+ and PyTorch 1.13.1+
 - 🤗Transformers, Datasets, Accelerate, PEFT and TRL
-- sentencepiece and tiktoken
+- sentencepiece, protobuf and tiktoken
 - jieba, rouge-chinese and nltk (used at evaluation)
 - gradio and matplotlib (used in web_demo.py)
 - uvicorn, fastapi and sse-starlette (used in api_demo.py)
@@ -145,7 +136,8 @@ And **powerful GPUs**!
 
 Please refer to `data/example_dataset` for checking the details about the format of dataset files. You can either use a single `.json` file or a [dataset loading script](https://huggingface.co/docs/datasets/dataset_script) with multiple files to create a custom dataset.
 
-Note: please update `data/dataset_info.json` to use your custom dataset. About the format of this file, please refer to `data/README.md`.
+> [!NOTE]
+> Please update `data/dataset_info.json` to use your custom dataset. About the format of this file, please refer to `data/README.md`.
 
 ### Dependence Installation (optional)
 
@@ -171,9 +163,13 @@ CUDA_VISIBLE_DEVICES=0 python src/train_web.py
 
 We strongly recommend using the all-in-one Web UI for newcomers since it can also generate training scripts **automatically**.
 
-Currently the web UI only supports training on **a single GPU**.
+> [!WARNING]
+> Currently the web UI only supports training on **a single GPU**.
 
 ### Train on a single GPU
+
+> [!IMPORTANT]
+> If you want to train models on multiple GPUs, please refer to [Distributed Training](#distributed-training).
 
 #### Pre-Training
 
@@ -307,19 +303,13 @@ accelerate config # configure the environment
 accelerate launch src/train_bash.py # arguments (same as above)
 ```
 
-<details><summary>Example config.yaml for training with DeepSpeed ZeRO-2</summary>
+<details><summary>Example config for LoRA training</summary>
 
 ```yaml
 compute_environment: LOCAL_MACHINE
-deepspeed_config:
-  gradient_accumulation_steps: 4
-  gradient_clipping: 0.5
-  offload_optimizer_device: none
-  offload_param_device: none
-  zero3_init_flag: false
-  zero_stage: 2
-distributed_type: DEEPSPEED
+distributed_type: MULTI_GPU
 downcast_bf16: 'no'
+gpu_ids: all
 machine_rank: 0
 main_training_function: main
 mixed_precision: fp16
@@ -343,10 +333,11 @@ deepspeed --num_gpus 8 --master_port=9901 src/train_bash.py \
     ... # arguments (same as above)
 ```
 
-<details><summary>Example ds_config.json for training with DeepSpeed ZeRO-2</summary>
+<details><summary>Example config for full-parameter training with DeepSpeed ZeRO-2</summary>
 
 ```json
 {
+  "train_batch_size": "auto",
   "train_micro_batch_size_per_gpu": "auto",
   "gradient_accumulation_steps": "auto",
   "gradient_clipping": "auto",
@@ -394,7 +385,8 @@ python src/api_demo.py \
     --checkpoint_dir path_to_checkpoint
 ```
 
-Visit `http://localhost:8000/docs` for API documentation.
+> [!NOTE]
+> Visit `http://localhost:8000/docs` for API documentation.
 
 ### CLI Demo
 
@@ -433,7 +425,8 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --predict_with_generate
 ```
 
-We recommend using `--per_device_eval_batch_size=1` and `--max_target_length 128` at 4/8-bit evaluation.
+> [!NOTE]
+> We recommend using `--per_device_eval_batch_size=1` and `--max_target_length 128` at 4/8-bit evaluation.
 
 ### Predict
 
@@ -451,12 +444,6 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --max_samples 100 \
     --predict_with_generate
 ```
-
-## TODO
-
-- [ ] Supporting flash attention ([torch](https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html) / [xformers](https://github.com/facebookresearch/xformers) / [flashattn](https://github.com/Dao-AILab/flash-attention)).
-- [ ] Implementing multi-query attention for faster inference.
-- [ ] Supporting full-parameter RLHF training.
 
 ## License
 
@@ -490,7 +477,7 @@ If this work is helpful, please kindly cite as:
 
 ## Acknowledgement
 
-This repo is a sibling of [ChatGLM-Efficient-Tuning](https://github.com/hiyouga/ChatGLM-Efficient-Tuning). They share a similar code structure of efficient tuning on large language models.
+This repo benefits from [PEFT](https://github.com/huggingface/peft), [QLoRA](https://github.com/artidoro/qlora) and [OpenChatKit](https://github.com/togethercomputer/OpenChatKit). Thanks for their wonderful works.
 
 ## Star History
 

@@ -4,6 +4,7 @@ import torch
 from types import MethodType
 from typing import TYPE_CHECKING, Literal, Optional, Tuple
 
+import transformers
 from transformers import (
     AutoConfig,
     AutoModelForCausalLM,
@@ -37,7 +38,7 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 
-check_min_version("4.29.1")
+check_min_version("4.30.0")
 require_version("datasets>=2.12.0", "To fix: pip install datasets>=2.12.0")
 require_version("accelerate>=0.21.0", "To fix: pip install accelerate>=0.21.0")
 require_version("peft==0.4.0", "To fix: pip install peft==0.4.0")
@@ -77,14 +78,15 @@ def load_model_and_tokenizer(
     if "PreTrainedTokenizerBase" not in str(tokenizer._pad.__func__):
         tokenizer._pad = MethodType(PreTrainedTokenizerBase._pad, tokenizer)
 
-    if finetuning_args.finetuning_type == "full" and model_args.checkpoint_dir is not None:
+    if finetuning_args.finetuning_type != "lora" and model_args.checkpoint_dir is not None:
         model_to_load = model_args.checkpoint_dir[0]
     else:
         model_to_load = model_args.model_name_or_path
 
     config = AutoConfig.from_pretrained(model_to_load, **config_kwargs)
 
-    if is_trainable and hasattr(config, "fp16") and hasattr(config, "bf16"): # fix Qwen config
+    # Fix config (for Qwen)
+    if is_trainable and hasattr(config, "fp16") and hasattr(config, "bf16"):
         if model_args.compute_dtype == torch.bfloat16:
             setattr(config, "bf16", True)
         else:
@@ -105,6 +107,7 @@ def load_model_and_tokenizer(
 
             if is_trainable:
                 if model_args.rope_scaling == "dynamic":
+                    assert not model_args.flash_attn, "Flash attention does not support dynamic rope scaling."
                     logger.warning(
                         "Dynamic NTK may not work well with fine-tuning. "
                         "See: https://github.com/huggingface/transformers/pull/24653"
@@ -126,6 +129,18 @@ def load_model_and_tokenizer(
 
         else:
             logger.warning("Current model does not support RoPE scaling.")
+
+    # Set flash attention
+    if model_args.flash_attn and getattr(config, "model_type", None) == "llama":
+        import transformers.models.llama.modeling_llama as LlamaModule
+        from llmtuner.extras.models.flash_llama import LlamaRMSNorm, LlamaAttention, _prepare_decoder_attention_mask
+        LlamaModule.LlamaRMSNorm = LlamaRMSNorm
+        LlamaModule.LlamaAttention = LlamaAttention
+        LlamaModule.LlamaModel._prepare_decoder_attention_mask = _prepare_decoder_attention_mask
+        if not hasattr(config, "num_key_value_heads"):
+            setattr(config, "num_key_value_heads", getattr(config, "num_attention_heads"))
+        if getattr(config, "pretraining_tp", 1) != 1:
+            setattr(config, "pretraining_tp", 1)
 
     # Quantization configurations (using bitsandbytes library).
     is_mergeable = True
@@ -185,6 +200,7 @@ def load_model_and_tokenizer(
     # Prepare model with valuehead for RLHF
     if stage == "rm" or stage == "ppo":
         model: AutoModelForCausalLMWithValueHead = AutoModelForCausalLMWithValueHead.from_pretrained(model)
+        model._keys_to_ignore_on_save = None
         reset_logging()
         if stage == "rm" and model_args.checkpoint_dir is not None: # load valuehead weights to evaluate reward model
             logger.warning("Only the last checkpoint containing valuehead will be loaded as the valuehead.")

@@ -55,7 +55,10 @@ def prepare_model_for_training(
                 output.requires_grad_(True)
             model.get_input_embeddings().register_forward_hook(make_inputs_require_grad)
 
-        model.gradient_checkpointing_enable()
+        try:
+            model.gradient_checkpointing_enable()
+        except:
+            pass
         model.config.use_cache = False # turn off when gradient checkpointing is enabled
 
     if finetuning_type != "full" and hasattr(model, output_layer_name):

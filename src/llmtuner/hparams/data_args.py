@@ -34,6 +34,10 @@ class DataArguments:
         default="alpaca_en",
         metadata={"help": "The name of provided dataset(s) to use. Use commas to separate multiple datasets."}
     )
+    pretrain_dataset: Optional[str] = field(
+        default=None,
+        metadata={"help": "The name of the pretraining dataset to use."}
+    )
     dataset_dir: Optional[str] = field(
         default="data",
         metadata={"help": "The name of the folder containing datasets."}

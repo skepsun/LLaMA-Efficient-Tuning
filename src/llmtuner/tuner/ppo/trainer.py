@@ -3,6 +3,7 @@ import math
 import torch
 from tqdm import tqdm
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
+import numpy as np
 
 from transformers import GenerationConfig, Trainer, TrainerState, TrainerControl
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
@@ -11,13 +12,14 @@ from trl import PPOTrainer
 from trl.core import LengthSampler, PPODecorators, logprobs_from_logits
 
 from llmtuner.extras.logging import get_logger
+from llmtuner.extras.constants import IGNORE_INDEX
 from llmtuner.extras.misc import AverageMeter, count_parameters, get_logits_processor
 from llmtuner.tuner.ppo.utils import cast_layernorm_dtype, replace_model
 
 if TYPE_CHECKING:
     from transformers import Seq2SeqTrainingArguments, TrainerCallback
     from trl import AutoModelForCausalLMWithValueHead
-    from llmtuner.hparams import GeneratingArguments
+    from llmtuner.hparams import GeneratingArguments, FinetuningArguments
 
 
 logger = get_logger(__name__)
@@ -32,20 +34,38 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
         self,
         training_args: "Seq2SeqTrainingArguments",
         generating_args: "GeneratingArguments",
+        finetuning_args: "FinetuningArguments",
         callbacks: List["TrainerCallback"],
         compute_dtype: torch.dtype,
+        pretrain_dataset: Optional[torch.utils.data.Dataset] = None,
         **kwargs
     ):
         PPOTrainer.__init__(self, **kwargs)
-        if getattr(self.accelerator.state, "deepspeed_plugin", None) is not None:
-            raise ValueError("PPOTrainer is incompatible with DeepSpeed.")
+        # if getattr(self.accelerator.state, "deepspeed_plugin", None) is not None:
+        #     raise ValueError("PPOTrainer is incompatible with DeepSpeed.")
 
         self.args = training_args
         self.generating_args = generating_args
+        self.finetuning_args = finetuning_args
         self.log_callback, self.save_callback = callbacks[0], callbacks[1]
         self.compute_dtype = compute_dtype
         self.state = TrainerState()
         self.control = TrainerControl()
+
+        # if pretrain_dataset is not None and not (isinstance(pretrain_dataset, torch.utils.data.Dataset) or isinstance(pretrain_dataset, torch.utils.data.Dataset)):
+        #     raise ValueError("dataset must be a torch.utils.data.Dataset or datasets.Dataset")
+
+
+        self.pretrain_dataset = pretrain_dataset
+        if self.pretrain_dataset is not None:
+            self.pretrain_dataloader = self.prepare_dataloader(self.pretrain_dataset, self.data_collator)
+        else:
+            self.pretrain_dataloader = None
+
+        self.pretrain_dataloader = self.accelerator.prepare(self.pretrain_dataloader)
+        if self.pretrain_dataset is not None:
+            self.pretrain_dataiter = iter(self.pretrain_dataloader)
+
 
     def ppo_train(self, max_target_length: int) -> None:
         r"""
@@ -88,6 +108,9 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
         steps_trained = 0
         loss_meter = AverageMeter()
         reward_meter = AverageMeter()
+        length_meter = AverageMeter()
+        if self.pretrain_dataset is not None:
+            ptx_loss_meter = AverageMeter()
         self.log_callback.on_train_begin(self.args, self.state, self.control)
 
         for step in tqdm(range(max_steps), disable=not self.is_local_process_zero()):
@@ -100,7 +123,8 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
             self.model.eval()
 
             # Get inputs
-            queries, responses = self.get_inputs(batch, length_sampler, generating_args)
+            queries, responses, lengths = self.get_inputs(batch, length_sampler, generating_args)
+            
             self.tokenizer.padding_side = "right" # change padding side
             rewards = self.get_rewards(queries, responses, unwrapped_model)
 
@@ -111,10 +135,14 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
 
             # Run PPO step
             stats = self.step(queries, responses, rewards)
+            stats["ppo/lengths"] = np.mean(lengths)
             # self.log_stats(stats, batch, rewards)
             self.tokenizer.padding_side = "left" # restore padding side
             loss_meter.update(stats["ppo/loss/total"], n=len(rewards))
             reward_meter.update(torch.stack(rewards).mean().item(), n=len(rewards))
+            length_meter.update(np.mean(lengths), n=len(rewards))
+            if self.pretrain_dataset is not None:
+                ptx_loss_meter.update(stats["ppo/loss/ptx"], n=len(rewards))
 
             self.state.global_step += 1
             self.log_callback.on_step_end(self.args, self.state, self.control)
@@ -122,7 +150,9 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
             if self.is_local_process_zero() and (step+1) % self.args.logging_steps == 0:
                 logs = dict(
                     loss=round(loss_meter.avg, 4),
+                    ptx=round(ptx_loss_meter.avg, 4) if self.pretrain_dataset is not None else None,
                     reward=round(reward_meter.avg, 4),
+                    length=round(length_meter.avg, 4),
                     learning_rate=stats["ppo/learning_rate"],
                     epoch=round(step / len_dataloader, 2)
                 )
@@ -132,6 +162,9 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
                 self.log_callback.on_log(self.args, self.state, self.control)
                 loss_meter.reset()
                 reward_meter.reset()
+                length_meter.reset()
+                if self.pretrain_dataset is not None:
+                    ptx_loss_meter.reset()
 
             if (step+1) % self.args.save_steps == 0: # save checkpoint
                 self.save_model(os.path.join(
@@ -176,7 +209,7 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
         self.model, _ = cast_layernorm_dtype(self.model, self.compute_dtype, layer_norm_params)
         query, response = input_ids.detach().cpu(), response[:, input_ids.size(-1):].detach().cpu()
 
-        queries, responses = [], []
+        queries, responses, lengths = [], [], []
         for i in range(len(query)):
             query_length = (query[i] != self.tokenizer.pad_token_id).nonzero()[0]
             response_index = (response[i] != self.tokenizer.pad_token_id).nonzero()
@@ -190,8 +223,12 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
 
             queries.append(query[i, query_length:]) # remove padding from left
             responses.append(response[i, :response_length]) # remove padding from right
+            if isinstance(response_length, torch.Tensor):
+                response_length = response_length.item()
 
-        return queries, responses
+            lengths.append(response_length)
+
+        return queries, responses, lengths
 
     @torch.no_grad()
     def get_rewards(
@@ -301,3 +338,60 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
         """
         if self.args.should_save:
             self._save(output_dir)
+
+    @PPODecorators.empty_cuda_cache()
+    def train_minibatch(
+        self,
+        old_logprobs: torch.FloatTensor,
+        values: torch.FloatTensor,
+        logprobs: torch.FloatTensor,
+        logits: torch.FloatTensor,
+        vpreds: torch.FloatTensor,
+        mask: torch.LongTensor,
+        advantages: torch.FloatTensor,
+        returns: torch.FloatTensor,
+    ):
+        """
+        Train one PPO minibatch
+
+        Args:
+            logprobs (`torch.FloatTensor`):
+                Log probabilities of the model, shape [batch_size, response_length]
+            values (`torch.FloatTensor`):
+                Values of the value head, shape [batch_size, response_length]
+            query (`torch.LongTensor`):
+                Encoded queries, shape [batch_size, query_length]
+            response (`torch.LongTensor`):
+                Encoded responses, shape [batch_size, response_length]
+            model_input (`torch.LongTensor`):
+                Concatenated queries and responses, shape [batch_size, query_length+response_length]
+
+        Returns:
+            train_stats (dict[str, `torch.Tensor`]):
+                Dictionary of training statistics
+        """
+
+        self.model.train()
+        loss_p, loss_v, train_stats = self.loss(
+            old_logprobs, values, logits, vpreds, logprobs, mask, advantages, returns
+        )
+        loss = loss_p + loss_v
+        self.accelerator.backward(loss)
+        
+        if self.pretrain_dataloader is not None:
+            batch = next(self.pretrain_dataiter)
+            # import pdb; pdb.set_trace()
+            # unwrapped_model = self.accelerator.unwrap_model(self.model)
+            ptx_loss = self.model(**batch)[1]
+            train_stats['loss/ptx'] = ptx_loss.detach()
+            self.accelerator.backward(self.finetuning_args.ptx_coef * ptx_loss)
+            # self.optimizer.step()
+        if self.config.max_grad_norm is not None:
+            if self.accelerator.sync_gradients:
+                self.accelerator.clip_grad_norm_(self.model_params, self.config.max_grad_norm)
+
+        self.optimizer.step()
+        # we call optimizer.zero_grad() every time and let `accelerator` handle accumulation
+        # see https://huggingface.co/docs/accelerate/usage_guides/gradient_accumulation#the-finished-code
+        self.optimizer.zero_grad()
+        return train_stats

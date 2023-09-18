@@ -1,26 +1,28 @@
-CUDA_VISIBLE_DEVICES=0,1,2,3,4 torchrun --nproc_per_node 5 src/train_bash.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node 8 src/train_bash.py \
     --stage rm \
-    --model_name_or_path outputs/baichuan-7b-sft \
-    --lora_target W_pack,o_proj,gate_proj,up_proj,down_proj \
+    --model_name_or_path outputs/baichuan2-llama-7b-sft \
+    --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
     --template vicuna \
     --do_train \
-    --dataset news_rm \
+    --dataset cvalues_comparison,hh_rlhf_cn \
+    --max_samples 10000,200000 \
     --finetuning_type lora \
-    --output_dir outputs/baichuan-7b-news-rm \
-    --per_device_train_batch_size 2 \
+    --output_dir outputs/baichuan2-llama-7b-rm \
+    --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 8 \
-    --gradient_accumulation_steps 2 \
+    --gradient_accumulation_steps 4 \
     --lr_scheduler_type cosine \
     --logging_steps 1 \
-    --save_total_limit 2\
+    --save_total_limit 2 \
     --save_steps 1000 \
-    --eval_steps 1000 \
+    --eval_steps 100 \
     --evaluation_strategy steps \
     --val_size 0.01 \
-    --learning_rate 5e-5 \
+    --learning_rate 2e-4 \
     --num_train_epochs 1 \
     --resume_lora_training False \
     --overwrite_output_dir \
     --report_to none \
     --plot_loss \
-    --fp16
+    --fp16 \
+    --tf32 True \

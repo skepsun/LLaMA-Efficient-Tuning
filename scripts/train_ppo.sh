@@ -1,15 +1,24 @@
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node 7 src/train_bash.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 deepspeed src/train_bash.py \
     --stage ppo \
-    --model_name_or_path ../baichuan-13b-sft \
-    --lora_target W_pack,o_proj,gate_proj,up_proj,down_proj \
+    --deepspeed configs/ds_zero2.json \
+    --model_name_or_path outputs/baichuan2-llama-7b-sft \
+    --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
     --template vicuna \
     --do_train \
-    --dataset news_ext \
+    --dataset hh_rlhf_cn_prompt \
+    --top_k 0 \
+    --top_p 0.9 \
+    --do_sample \
+    --ptx_coef 27.8 \
+    --init_kl_coef 0.05 \
+    --vf_coef 1 \
+    --ppo_score_norm True \
     --finetuning_type lora \
-    --reward_model outputs/baichuan-13b-rm-news \
-    --output_dir outputs/baichuan-13b-ppo-news \
+    --reward_model outputs/baichuan2-llama-7b-rm \
+    --output_dir outputs/baichuan2-7b-ppo \
+    --overwrite_output_dir \
     --max_target_length 512 \
-    --per_device_train_batch_size 1 \
+    --per_device_train_batch_size 2 \
     --per_device_eval_batch_size 1 \
     --gradient_accumulation_steps 1 \
     --lr_scheduler_type cosine \
@@ -19,6 +28,8 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6 torchrun --nproc_per_node 7 src/train_bash.py
     --report_to none \
     --eval_steps 10 \
     --learning_rate 1e-5 \
+    --actor_learning_rate 5e-4 \
+    --critic_learning_rate 1e-5 \
     --num_train_epochs 1 \
     --resume_lora_training False \
     --fp16 \

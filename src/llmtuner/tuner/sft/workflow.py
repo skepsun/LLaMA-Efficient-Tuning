@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Optional, List
 from transformers import DataCollatorForSeq2Seq, Seq2SeqTrainingArguments
-
+from copy import deepcopy
 from llmtuner.dsets import get_dataset, preprocess_dataset, split_dataset
 from llmtuner.extras.constants import IGNORE_INDEX
 from llmtuner.extras.misc import get_logits_processor
@@ -27,7 +27,14 @@ def run_sft(
     dataset = get_dataset(model_args, data_args)
     model, tokenizer = load_model_and_tokenizer(model_args, finetuning_args, training_args.do_train, stage="sft")
     dataset = preprocess_dataset(dataset, tokenizer, data_args, training_args, stage="sft")
-
+    if data_args.pretrain_dataset is not None:
+        temp_data_args = deepcopy(data_args)
+        temp_data_args.dataset = data_args.pretrain_dataset
+        temp_data_args.init_for_training()
+        pretrain_dataset = get_dataset(model_args, temp_data_args)
+        pretrain_dataset = preprocess_dataset(pretrain_dataset, tokenizer, temp_data_args, training_args, stage="pt")
+    else:
+        pretrain_dataset = None
     if training_args.predict_with_generate:
         tokenizer.padding_side = "left" # use left-padding in generation
 
@@ -46,6 +53,8 @@ def run_sft(
 
     # Initialize our Trainer
     trainer = CustomSeq2SeqTrainer(
+        finetuning_args=finetuning_args,
+        pretrain_dataset=pretrain_dataset,
         model=model,
         args=training_args,
         tokenizer=tokenizer,

@@ -326,6 +326,17 @@
       "response": "output",
       "history": "history",
       "prefix": ""
+    },
+    "ranking": true
+  },
+  "hh_rlhf_cn_coh": {
+    "script_url": "hh_rlhf_cn_coh",
+    "columns": {
+      "prompt": "prompt",
+      "query": "",
+      "response": "response",
+      "history": "history",
+      "prefix": ""
     }
   },
   "hh_rlhf_cn_prompt": {
@@ -435,6 +446,16 @@
       "prefix": ""
     }
   },
+  "wikitext_103": {
+    "script_url": "/data/chuxiong/wikitext_103_detokenized",
+    "columns": {
+      "prompt": "text",
+      "query": "",
+      "response": "",
+      "history": "",
+      "prefix": ""
+    }
+  },
   "linly_pretrain": {
     "hf_hub_url": "Linly-AI/Chinese-pretraining-dataset",
     "columns": {
@@ -462,6 +483,16 @@
       "query": "",
       "response": "",
       "history": "",
+      "prefix": ""
+    }
+  },
+  "wiki_cn_filtered": {
+    "script_url": "/data/chuxiong/wikipedia-cn-20230720-filtered",
+    "columns": {
+      "prompt": "completion",
+      "query": "",
+      "response": "",
+      "hisotry": "",
       "prefix": ""
     }
   },
@@ -643,7 +674,8 @@
       "response": "output",
       "history": "history",
       "prefix": ""
-    }
+    },
+    "ranking": true
   },
   "cvalues_sft":{
     "file_name": "100PoinsonMpts.train.jsonl",
@@ -727,6 +759,35 @@
   },
   "news_rm": {
     "script_url": "news_rm",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": ""
+    },
+    "ranking": true
+  },
+  "news_rm_coh": {
+    "script_url": "news_rm_coh",
+    "columns": {
+      "prompt": "prompt",
+      "query": "",
+      "response": "response",
+      "history": "history"
+    }
+  },
+  "news_rm_50w": {
+    "script_url": "news_rm_50w",
+    "columns": {
+      "prompt": "instruction",
+      "query": "input",
+      "response": "output",
+      "history": ""
+    },
+    "ranking": true
+  },
+  "news_rm_small": {
+    "script_url": "news_rm_small",
     "columns": {
       "prompt": "instruction",
       "query": "input",

@@ -347,6 +347,25 @@ register_template(
     sep=[]
 )
 
+r"""
+Supports: https://huggingface.co/lmsys/vicuna-7b-delta-v1.1
+          https://huggingface.co/lmsys/vicuna-13b-delta-v1.1
+"""
+register_template(
+    name="vicuna_coh",
+    prefix=[
+        "{{system}}"
+    ],
+    prompt=[
+        "USER: {{query}}\nA helpful answer:\n ASSISTANT: "
+    ],
+    system=(
+        "A chat between a curious user and an artificial intelligence assistant. "
+        "The assistant gives helpful, detailed, and polite answers to the user's questions."
+    ),
+    sep=[]
+)
+
 
 r"""
 Supports: https://huggingface.co/BelleGroup/BELLE-LLaMA-EXT-13B

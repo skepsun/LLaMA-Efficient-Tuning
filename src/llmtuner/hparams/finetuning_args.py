@@ -67,6 +67,22 @@ class FinetuningArguments:
         default=False,
         metadata={"help": "Use score normalization in PPO Training."}
     )
+    actor_learning_rate: Optional[float] = field(
+        default=5e-6,
+        metadata={"help": "Learning rate for the actor model."}
+    )
+    critic_learning_rate: Optional[float] = field(
+        default=5e-6,
+        metadata={"help": "Learning rate for the critic model."}
+    )
+    init_kl_coef: Optional[float] = field(
+        default=0.2,
+        metadata={"help": "Initial KL penalty coefficient (used for adaptive and linear control)."}
+    )
+    vf_coef: Optional[float] = field(
+        default=0.1,
+        metadata={"help": "Scaling factor for value loss."}
+    )
     dpo_beta: Optional[float] = field(
         default=0.1,
         metadata={"help": "The beta parameter for the DPO loss."}
@@ -75,6 +91,11 @@ class FinetuningArguments:
     dpo_beta: Optional[float] = field(
         default=0.1,
         metadata={"help": "The important parameter used in DPO algorithm."}
+    )
+
+    ptx_coef: Optional[float] = field(
+        default=27.8,
+        metadata={"help": "The coefficient used in PPO-ptx Loss."}
     )
 
     def __post_init__(self):

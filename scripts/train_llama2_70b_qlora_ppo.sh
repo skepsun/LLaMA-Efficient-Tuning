@@ -1,0 +1,30 @@
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node 8 src/train_bash.py \
+    --stage ppo \
+    --model_name_or_path ../tigerbot-70b-sft-v2 \
+    --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
+    --template vicuna \
+    --do_train \
+    --dataset hh_rlhf_cn_prompt \
+    --optim paged_adamw_32bit \
+    --finetuning_type lora \
+    --quantization_bit 4 \
+    --reward_model outputs/tigerbot-70b-rm/checkpoint-400 \
+    --output_dir outputs/tigerbot-70b-ppo \
+    --per_device_train_batch_size 1 \
+    --per_device_eval_batch_size 1 \
+    --gradient_accumulation_steps 1 \
+    --preprocessing_num_workers 12 \
+    --lr_scheduler_type cosine \
+    --logging_steps 1 \
+    --save_total_limit 2\
+    --save_steps 100 \
+    --eval_steps 100 \
+    --evaluation_strategy steps \
+    --val_size 0.01 \
+    --learning_rate 5e-5 \
+    --num_train_epochs 1 \
+    --resume_lora_training False \
+    --overwrite_output_dir \
+    --report_to none \
+    --plot_loss \
+    --fp16

@@ -38,3 +38,61 @@ def cast_layernorm_dtype(
                 param.data = layer_norm_params[name] # restore float32 weights
 
     return model, layer_norm_state_dict
+
+def get_optimizer_grouped_parameters(
+    model,
+    weight_decay,
+    actor_lora_lr=5e-4,
+    critic_lora_lr=5e-6,
+    no_decay_name_list=["bias", "LayerNorm.weight"],
+    actor_lora_name_list=["lora_A.default", "lora_B.default"],
+    critic_lora_name_list=["v_head", "lora_A.reward", "lora_B.reward"],
+):
+    optimizer_grouped_parameters = [
+        {
+            "params": [
+                p for n, p in model.named_parameters()
+                if (not any(nd in n for nd in no_decay_name_list)
+                    and p.requires_grad and not any(nd in n
+                                                    for nd in actor_lora_name_list+critic_lora_name_list))
+            ],
+            "weight_decay":
+            weight_decay,
+        },
+        {
+            "params": [
+                p for n, p in model.named_parameters()
+                if (not any(nd in n for nd in no_decay_name_list)
+                    and p.requires_grad and any(nd in n
+                                                for nd in actor_lora_name_list))
+            ],
+            "weight_decay":
+            weight_decay,
+            "lr":
+            actor_lora_lr
+        },
+        {
+            "params": [
+                p for n, p in model.named_parameters()
+                if (not any(nd in n for nd in no_decay_name_list)
+                    and p.requires_grad and any(nd in n
+                                                for nd in critic_lora_name_list))
+            ],
+            "weight_decay":
+            weight_decay,
+            "lr":
+            critic_lora_lr
+        },
+        {
+            "params": [
+                p for n, p in model.named_parameters()
+                if (any(nd in n
+                        for nd in no_decay_name_list) and p.requires_grad)
+            ],
+            "weight_decay":
+            0.0,
+        },
+    ]
+    if not optimizer_grouped_parameters[1]["params"]:
+        optimizer_grouped_parameters.pop(1)
+    return optimizer_grouped_parameters

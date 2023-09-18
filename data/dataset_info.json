@@ -141,6 +141,12 @@
       "prefix": ""
     }
   },
+  "codealpaca": {
+    "hf_hub_url": "sahil2801/CodeAlpaca-20k"
+  },
+  "alpaca_cot": {
+    "hf_hub_url": "QingyiSi/Alpaca-CoT"
+  },
   "firefly": {
     "hf_hub_url": "YeungNLP/firefly-train-1.1M",
     "columns": {
@@ -151,11 +157,14 @@
       "prefix": ""
     }
   },
-  "codealpaca": {
-    "hf_hub_url": "sahil2801/CodeAlpaca-20k"
-  },
-  "alpaca_cot": {
-    "hf_hub_url": "QingyiSi/Alpaca-CoT"
+  "mathinstruct": {
+    "hf_hub_url": "TIGER-Lab/MathInstruct",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": ""
+    }
   },
   "alpaca_cot_cn": {
     "file_name": "CoT_Chinese_data.json"

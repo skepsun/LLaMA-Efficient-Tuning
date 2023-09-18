@@ -13,10 +13,13 @@
 \[ English | [中文](README_zh.md) \]
 
 ## What I modified?
+[23/09/18] support additional ptx loss in SFT and PPO stages. Use `--pretrain_dataset` to specify pretrain dataset(s) and `--ptx_coef` to define ptx loss coefficient.
+[23/09/15] PPO now supports Qlora using DeepSpeed (only zero2). Thus, a full RLHF pipeline can be completed for llama2-70b models on 8xA800 (80G)!
+
+initial additional features:
 1. support expand vocabulary
 2. support separately datasets' size limitations
 3. my naive dpo implementation from trl. I use multiturn dialogues in preprocessing.
-4. support flash attention (simply using monkey path from Fastchat)
 
 
 ## Changelog

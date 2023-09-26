@@ -9,7 +9,7 @@ from transformers import GenerationConfig, Trainer, TrainerState, TrainerControl
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
 from trl import PPOTrainer
-from trl.core import LengthSampler, PPODecorators, logprobs_from_logits
+from trl.core import PPODecorators, logprobs_from_logits
 
 from llmtuner.extras.logging import get_logger
 from llmtuner.extras.constants import IGNORE_INDEX
@@ -101,9 +101,7 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
             pad_token_id=self.tokenizer.pad_token_id
         ))
 
-        length_sampler = LengthSampler(max_target_length // 2, max_target_length)
         unwrapped_model: "AutoModelForCausalLMWithValueHead" = self.accelerator.unwrap_model(self.model)
-
         dataiter = iter(self.dataloader)
         steps_trained = 0
         loss_meter = AverageMeter()
@@ -190,13 +188,11 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
     def get_inputs(
         self,
         batch: Dict[str, torch.Tensor],
-        length_sampler: Callable,
         generating_args: Dict[str, Any]
     ) -> Tuple[List[torch.Tensor], List[torch.Tensor]]:
         r"""
         Generates model's responses given queries.
         """
-        generating_args["max_new_tokens"] = length_sampler()
         gen_kwargs = dict(
             generation_config=GenerationConfig(**generating_args),
             logits_processor=get_logits_processor(),

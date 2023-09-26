@@ -46,12 +46,16 @@ class DataArguments:
         default="train",
         metadata={"help": "Which dataset split to use for training and evaluation."}
     )
+    cutoff_len: Optional[int] = field(
+        default=1024,
+        metadata={"help": "The maximum length of the model inputs after tokenization."}
+    )
     streaming: Optional[bool] = field(
         default=False,
         metadata={"help": "Enable streaming mode."}
     )
     buffer_size: Optional[int] = field(
-        default=1024,
+        default=16384,
         metadata={"help": "Size of the buffer to randomly sample examples from in streaming mode."}
     )
     mix_strategy: Optional[Literal["concat", "interleave_under", "interleave_over"]] = field(
@@ -86,7 +90,7 @@ class DataArguments:
         default=512,
         metadata={"help": "The maximum total output sequence length after tokenization."}
     )
-    max_samples: Optional[str] = field(
+    max_samples: Optional[int] = field(
         default=None,
         metadata={"help": "For debugging purposes, truncate the number of examples for each dataset."}
     )

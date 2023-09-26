@@ -24,7 +24,7 @@ def quantize(input_dir: str, output_dir: str, data_file: str, max_length: int, m
                 for user_query, bot_resp in examples["history"][i]:
                     prompt += "USER: {}\nASSISTANT: {}\n".format(user_query, bot_resp)
             prompt += "USER: {}\nASSISTANT: {}".format(
-                examples["instruction"][i] + "\n" + examples["input"][i], examples["output"][i]
+                examples["instruction"][i] + "\n", examples["output"][i]
             )
             texts.append(prompt)
         return tokenizer(texts, truncation=True, max_length=max_length)
@@ -43,7 +43,7 @@ def quantize(input_dir: str, output_dir: str, data_file: str, max_length: int, m
     )
 
     model = AutoGPTQForCausalLM.from_pretrained(input_dir, quantize_config, trust_remote_code=True)
-    model.quantize(dataset)
+    model.quantize(dataset, batch_size=4, use_triton=True)
     model.save_quantized(output_dir)
 
 

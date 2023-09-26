@@ -1,16 +1,15 @@
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node 8 src/train_bash.py \
+CUDA_VISIBLE_DEVICES=1,2,3,4,5,6,7 torchrun --nproc_per_node 7 src/train_bash.py \
     --stage rm \
     --model_name_or_path ../tigerbot-70b-sft-v2 \
     --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
     --template vicuna \
     --do_train \
-    --dataset news_rm_small,cvalues_comparison,hh_rlhf_cn \
-    --max_samples 100000,20000,100000 \
+    --dataset cvalues_comparison,hh_rlhf_cn \
     --optim paged_adamw_32bit \
     --finetuning_type lora \
     --quantization_bit 4 \
     --output_dir outputs/tigerbot-70b-rm \
-    --per_device_train_batch_size 1 \
+    --per_device_train_batch_size 2 \
     --per_device_eval_batch_size 1 \
     --gradient_accumulation_steps 16 \
     --preprocessing_num_workers 12 \

@@ -1,11 +1,12 @@
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 deepspeed --num_gpus=8 src/train_bash.py \
     --stage sft \
-    --deepspeed configs/ds_zero2.json \
+    --deepspeed configs/ds_zero3.json \
     --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
     --template vicuna \
-    --model_name_or_path ../phi-1_5 \
+    --model_name_or_path ../Qwen-14B \
     --do_train \
-    --dataset lawyer_llama_data,news_ext,cvalues_sft,belle_platypus_sharegpt4 \
+    --dataset lawyer_llama_data,cvalues_sft,belle_platypus_sharegpt4,mathinstruct,evol_code_66k \
+    --max_samples 10000,1000,70000,10000,10000 \
     --ptx_coef 0.75 \
     --finetuning_type full \
     --lora_rank 8 \
@@ -13,9 +14,9 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 deepspeed --num_gpus=8 src/train_bash.py \
     --lora_dropout 0.05 \
     --warmup_ratio 0.03 \
     --optim adamw_torch \
-    --output_dir outputs/phi-1_5-sft \
-    --per_device_train_batch_size 4 \
-    --gradient_accumulation_steps 4 \
+    --output_dir outputs/qwen-14b-sft \
+    --per_device_train_batch_size 16 \
+    --gradient_accumulation_steps 8 \
     --preprocessing_num_workers 12 \
     --lr_scheduler_type cosine \
     --evaluation_strategy epoch \

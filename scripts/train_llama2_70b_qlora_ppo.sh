@@ -4,15 +4,22 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node 8 src/train_bash.
     --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
     --template vicuna \
     --do_train \
-    --dataset hh_rlhf_cn_prompt \
+    --top_k 0 \
+    --top_p 0.9 \
+    --do_sample \
+    --ptx_coef 27.8 \
+    --init_kl_coef 0.05 \
+    --vf_coef 1 \
+    --ppo_score_norm True \
+    --dataset hh_rlhf_cn_prompt,cvalues_sft \
     --optim paged_adamw_32bit \
     --finetuning_type lora \
     --quantization_bit 4 \
-    --reward_model outputs/tigerbot-70b-rm/checkpoint-400 \
+    --reward_model outputs/tigerbot-70b-rm \
     --output_dir outputs/tigerbot-70b-ppo \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
-    --gradient_accumulation_steps 1 \
+    --gradient_accumulation_steps 8 \
     --preprocessing_num_workers 12 \
     --lr_scheduler_type cosine \
     --logging_steps 1 \
@@ -21,10 +28,12 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node 8 src/train_bash.
     --eval_steps 100 \
     --evaluation_strategy steps \
     --val_size 0.01 \
-    --learning_rate 5e-5 \
+    --learning_rate 1e-5 \
+    --actor_learning_rate 2e-4 \
+    --critic_learning_rate 1e-6 \
     --num_train_epochs 1 \
     --resume_lora_training False \
     --overwrite_output_dir \
-    --report_to none \
+    --report_to wandb \
     --plot_loss \
     --fp16

@@ -158,7 +158,7 @@
     }
   },
   "mathinstruct": {
-    "hf_hub_url": "TIGER-Lab/MathInstruct",
+    "script_url": "MathInstruct",
     "columns": {
       "prompt": "instruction",
       "query": "",
@@ -842,6 +842,15 @@
       "response": "predict",
       "history": "",
       "prefix": ""
+    }
+  },
+  "evol_code_66k": {
+    "script_url": "Evol-instruction-66k",
+    "columns": {
+      "prompt": "instruction",
+      "query": "",
+      "response": "output",
+      "history": ""
     }
   },
   "the_stack": {

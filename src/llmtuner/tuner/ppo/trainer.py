@@ -136,7 +136,7 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
             # Run PPO step
             stats = self.step(queries, responses, rewards)
             stats["ppo/lengths"] = np.mean(lengths)
-            # self.log_stats(stats, batch, rewards)
+            self.log_stats(stats, batch, rewards)
             self.tokenizer.padding_side = "left" # restore padding side
             loss_meter.update(stats["ppo/loss/total"], n=len(rewards))
             reward_meter.update(torch.stack(rewards).mean().item(), n=len(rewards))
@@ -253,7 +253,7 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
         rewards = []
         for i in range(values.size(0)):
             end_index = batch["attention_mask"][i].nonzero()[-1] # use the score on the EOS token
-            rewards.append(values[i, end_index].float().detach().cpu()) # use fp32 type
+            rewards.append(values[i, end_index.cpu()].float().detach().cpu()) # use fp32 type
 
         replace_model(unwrapped_model, target="default")
         return rewards

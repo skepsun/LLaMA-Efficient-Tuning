@@ -56,11 +56,12 @@ def run_ppo(
         optimize_cuda_cache=True,
         seed=training_args.seed,
         adap_kl_ctrl=False,
+        # We disable this handler since it conflicts with 4-bit training
         # accelerator_kwargs={"kwargs_handlers": [DistributedDataParallelKwargs(find_unused_parameters=True)]},
         init_kl_coef=finetuning_args.init_kl_coef,
         gamma=1,
         lam=0.95,
-        score_clip=10,
+        score_clip=5,
         vf_coef=finetuning_args.vf_coef,
     )
 

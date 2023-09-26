@@ -1,6 +1,5 @@
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 deepspeed src/train_bash.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node=8 src/train_bash.py \
     --stage ppo \
-    --deepspeed configs/ds_zero2.json \
     --model_name_or_path outputs/baichuan2-llama-7b-sft \
     --lora_target q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj \
     --template vicuna \
@@ -14,8 +13,9 @@ CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 deepspeed src/train_bash.py \
     --vf_coef 1 \
     --ppo_score_norm True \
     --finetuning_type lora \
+    --quantization_bit 4 \
     --reward_model outputs/baichuan2-llama-7b-rm \
-    --output_dir outputs/baichuan2-7b-ppo \
+    --output_dir outputs/baichuan2-7b-ppo-test \
     --overwrite_output_dir \
     --max_target_length 512 \
     --per_device_train_batch_size 2 \
